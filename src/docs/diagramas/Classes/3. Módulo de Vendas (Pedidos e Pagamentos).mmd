@@ -1,0 +1,68 @@
+classDiagram
+    %% --- Entidades (Tabelas) ---
+    class Unidade {
+        +UUID id
+    }
+
+    class Pedidos {
+        +UUID id
+        +UUID unidade_id
+        +NUMERIC total
+        +VARCHAR canal_pedido
+        +VARCHAR forma_pagamento
+        +VARCHAR status
+        +TIMESTAMP created_at
+    }
+
+    class PedidoItens {
+        +UUID id
+        +UUID pedido_id
+        +UUID produto_cardapio_id
+        +INTEGER quantidade
+        +NUMERIC preco_unidade
+        +NUMERIC subtotal
+    }
+
+    class Pagamentos {
+        +UUID id
+        +UUID pedido_id
+        +UUID unidade_id
+        +VARCHAR metodo_pagamento
+        +NUMERIC valor
+        +VARCHAR status
+        +TIMESTAMP created_at
+    }
+
+    class CardapioProdutos {
+        +UUID id
+    }
+
+    %% Relacionamentos de Banco
+    Unidade "1" <-- "0..*" Pedidos : processa
+    Unidade "1" <-- "0..*" Pagamentos : recebe
+    Pedidos "1" <-- "0..*" PedidoItens : contem
+    Pedidos "1" <-- "1" Pagamentos : origina
+    CardapioProdutos "1" <-- "0..*" PedidoItens : incluido_em
+
+    %% --- Persistência (Repositories) ---
+    class OrdersRepository {
+        +findOrdersByUnitId(string unidade_id)
+        +findOrderItemsByOrderId(string order_id)
+        +findOrderById(string order_id)
+        +createOrder(string unidade_id, number total, string canal_pedido, string forma_pagamento, string status)
+        +createOrderItem(string order_id, string produto_cardapio_id, number quantidade, number preco_unidade, number subtotal)
+        +updateOrderStatus(string order_id, string status)
+    }
+
+    class PaymentsRepository {
+        +findPaymentsByOrderId(string id)
+        +findPaymentsByUnitId(string unidade_id)
+        +insertPaymentPaid(Payment payment)
+        +insertPaymentRefused(Payment payment)
+        +insertPaymentCanceled(Payment payment)
+        +createOrderPayment(string unidade_id, string pedido_id, string forma_pagamento, number valor, string status)
+    }
+
+    OrdersRepository ..> Pedidos : manipula
+    OrdersRepository ..> PedidoItens : manipula
+    PaymentsRepository ..> Pagamentos : manipula

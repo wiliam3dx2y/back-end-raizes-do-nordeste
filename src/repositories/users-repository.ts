@@ -1,0 +1,45 @@
+import { pool } from "../database";
+import { ClientPointTransaction } from "../models/user-model";
+
+export const findUserByEmail = async (email: string) => {
+  return await pool.query(
+    "SELECT * FROM usuarios WHERE email = $1",
+    [email]
+  );
+}
+
+export const findUserById = async (id: string) => {
+    return await pool.query(
+        "SELECT * FROM usuarios WHERE id = $1",
+        [id]
+    );
+}
+
+export const createClient = async (unidade_id: number, name: string, email: string, hashedPassword: any, role: string, ativo_programa_fidelidade: boolean) => {
+    return await pool.query(
+        "INSERT INTO usuarios (unidade_id, nome, email, senha, role, ativo_pontos) VALUES ($1, $2, $3, $4, $5, $6)",
+        [unidade_id, name, email, hashedPassword, role, ativo_programa_fidelidade]
+    );
+}
+
+export const updateMembershipPoints = async (usuario_id: number, ativo_pontos: boolean) => {
+    return await pool.query(
+        "UPDATE usuarios SET pontos = $2 WHERE id = $1",
+        [usuario_id, ativo_pontos]
+    );
+}
+
+export const updatePoints = async (usuario_id: string, pontos: number) => {
+    return await pool.query(
+        "UPDATE usuarios SET pontos = pontos + $2 WHERE id = $1",
+        [usuario_id, pontos]
+    );
+}
+
+export const registerPointTransaction = async (transacao: ClientPointTransaction) => {
+    return await pool.query(
+        "INSERT INTO movimentacao_pontos (id, unidade_id, usuario_id, pontos, tipo_transacao, descricao) " +
+        "VALUES (COALESCE($1, gen_random_uuid()), $2, $3, $4, $5, $6)",
+        [transacao.id ?? null, transacao.unidade_id, transacao.usuario_id, transacao.pontos, transacao.tipo_transacao, transacao.descricao]
+    );
+}

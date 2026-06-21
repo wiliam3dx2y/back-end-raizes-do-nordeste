@@ -1,0 +1,38 @@
+erDiagram
+    unidades {
+        UUID id PK
+    }
+    usuarios {
+        UUID id PK
+        UUID unidade_id FK
+        VARCHAR nome
+        TEXT role
+    }
+    movimentacao_pontos {
+        UUID id PK
+        UUID unidade_id FK
+        UUID usuario_id FK
+        INTEGER pontos
+    }
+    cupons {
+        UUID id PK
+        UUID unidade_id FK
+        VARCHAR codigo
+        BOOLEAN ativo
+    }
+    cupons_privados {
+        UUID id PK
+        UUID unidade_id FK
+        UUID usuario_id FK
+        UUID cupom_id FK
+        VARCHAR status
+    }
+
+    unidades ||--o{ usuarios : "possui"
+    unidades ||--o{ movimentacao_pontos : "gerencia"
+    unidades ||--o{ cupons : "emite"
+    unidades ||--o{ cupons_privados : "valida"
+
+    usuarios ||--o{ movimentacao_pontos : "acumula/gasta"
+    usuarios ||--o{ cupons_privados : "recebe"
+    cupons ||--o{ cupons_privados : "gera"

@@ -1,0 +1,679 @@
+type: collection.insomnia.rest/5.0
+schema_version: "5.1"
+name: API - Raízes do Nordeste - Collection
+meta:
+  id: wrk_021bdadc66d74c86b768a922576b6f98
+  created: 1781879533980
+  modified: 1781879644468
+  description: ""
+collection:
+  - name: Testes
+    meta:
+      id: fld_8e716bfab5014403862bec10b9b86803
+      created: 1781879774793
+      modified: 1781879774793
+      sortKey: -1781879774793
+      description: ""
+    children:
+      - name: Fluxo Principal
+        meta:
+          id: fld_046fb1e91c9044d28fcccc314b37b2f3
+          created: 1781879787345
+          modified: 1782008618408
+          sortKey: -1781879787545
+          description: ""
+        children:
+          - url: "{{BASE_URL}}/auth/login"
+            name: 02 - Fazer login (cliente)
+            meta:
+              id: req_916c296fc422463384e712a0a7eb24ca
+              created: 1781879792732
+              modified: 1782011530157
+              isPrivate: false
+              description: ""
+              sortKey: -1781879792732
+            method: POST
+            body:
+              mimeType: application/json
+              text: |-
+                {
+                  "email": "carloscliente@gmail.com",
+                  "password": "carlos123"
+                }
+            headers:
+              - name: Content-Type
+                value: application/json
+            settings:
+              renderRequestBody: true
+              encodeUrl: true
+              followRedirects: global
+              cookies:
+                send: true
+                store: true
+              rebuildPath: true
+          - url: "{{BASE_URL}}/auth/register"
+            name: 01 - Fazer cadastro (cliente)
+            meta:
+              id: req_85cfdde405c645988b5b6b0fb67889f2
+              created: 1781880037099
+              modified: 1781882929984
+              isPrivate: false
+              description: ""
+              sortKey: -1781880037099
+            method: POST
+            body:
+              mimeType: application/json
+              text: |-
+                {
+                    "unidade_id": "{{UNIDADE_ID}}",
+                    "name": "Carlos Wilian",
+                    "email": "carloscliente@gmail.com",
+                    "password": "carlos123",
+                    "ativo_pontos": true
+                }
+            headers:
+              - name: Content-Type
+                value: application/json
+            settings:
+              renderRequestBody: true
+              encodeUrl: true
+              followRedirects: global
+              cookies:
+                send: true
+                store: true
+              rebuildPath: true
+          - url: "{{BASE_URL}}/cardapio/{{UNIDADE_ID}}"
+            name: 03 - Obter cardápio da unidade
+            meta:
+              id: req_4396e92b5a654b1386b13a31b125e1f5
+              created: 1781880575094
+              modified: 1781882947177
+              isPrivate: false
+              description: ""
+              sortKey: -1781879792632
+            method: GET
+            authentication:
+              type: bearer
+              token: "{% response 'body', 'req_916c296fc422463384e712a0a7eb24ca',
+                'b64::JC50b2tlbg==::46b', 'never', 60 %}"
+            settings:
+              renderRequestBody: true
+              encodeUrl: true
+              followRedirects: global
+              cookies:
+                send: true
+                store: true
+              rebuildPath: true
+          - url: "{{ _.BASE_URL }}/auth/login"
+            name: 03 - Fazer login (atendente)
+            meta:
+              id: req_4b18bd9cc11d4ae1913712a63118d30c
+              created: 1781881618976
+              modified: 1781882953906
+              isPrivate: false
+              description: ""
+              sortKey: -1781879792532
+            method: POST
+            body:
+              mimeType: application/json
+              text: |-
+                {
+                  "email": "atendimento@raizesnordeste.com",
+                  "password": "atendente"
+                }
+            headers:
+              - name: Content-Type
+                value: application/json
+            settings:
+              renderRequestBody: true
+              encodeUrl: true
+              followRedirects: global
+              cookies:
+                send: true
+                store: true
+              rebuildPath: true
+          - url: "{{BASE_URL}}/pedidos"
+            name: 04 - Fazer pedido
+            meta:
+              id: req_47b2691ae33b4f248fe69780f0306071
+              created: 1781881992164
+              modified: 1781882962806
+              isPrivate: false
+              description: ""
+              sortKey: -1781879792432
+            method: POST
+            body:
+              mimeType: application/json
+              text: |-
+                {
+                    "unidade_id": "{{UNIDADE_ID}}",
+                    "items": [
+                        {
+                            "produto_id": "{{PRODUCT_ID}}",
+                            "quantidade": 1
+                        }
+                    ],
+                    "canal_pedido": "balcão",
+                    "forma_pagamento": "debito"
+                }
+            headers:
+              - name: Content-Type
+                value: application/json
+            authentication:
+              type: bearer
+              token: "{% response 'body', 'req_4b18bd9cc11d4ae1913712a63118d30c',
+                'b64::JC50b2tlbg==::46b', 'never', 60 %}"
+            settings:
+              renderRequestBody: true
+              encodeUrl: true
+              followRedirects: global
+              cookies:
+                send: true
+                store: true
+              rebuildPath: true
+          - url: "{{BASE_URL}}/pedidos/status/{% response 'body',
+              'req_47b2691ae33b4f248fe69780f0306071',
+              'b64::JC5vcmRlcl9pZA==::46b', 'never', 60 %}"
+            name: 05 - Obter pedido (status cozinha)
+            meta:
+              id: req_a47d06f9376145e6a4356b0ef1a4ee7f
+              created: 1781882520180
+              modified: 1781882970721
+              isPrivate: false
+              description: ""
+              sortKey: -1781879792332
+            method: GET
+            authentication:
+              type: bearer
+              token: "{% response 'body', 'req_4b18bd9cc11d4ae1913712a63118d30c',
+                'b64::JC50b2tlbg==::46b', 'never', 60 %}"
+            settings:
+              renderRequestBody: true
+              encodeUrl: true
+              followRedirects: global
+              cookies:
+                send: true
+                store: true
+              rebuildPath: true
+          - url: "{{ _.BASE_URL }}/auth/login"
+            name: 06 - Fazer login (cozinha)
+            meta:
+              id: req_a84fc8706aaa404ab24aa46b2ca19752
+              created: 1781882729702
+              modified: 1781882978151
+              isPrivate: false
+              description: ""
+              sortKey: -1781879792232
+            method: POST
+            body:
+              mimeType: application/json
+              text: |-
+                {
+                  "email": "cozinha@raizesnordeste.com",
+                  "password": "cozinha"
+                }
+            headers:
+              - name: Content-Type
+                value: application/json
+            settings:
+              renderRequestBody: true
+              encodeUrl: true
+              followRedirects: global
+              cookies:
+                send: true
+                store: true
+              rebuildPath: true
+          - url: "{{BASE_URL}}/pedidos/{% response 'body',
+              'req_47b2691ae33b4f248fe69780f0306071',
+              'b64::JC5vcmRlcl9pZA==::46b', 'never', 60 %}"
+            name: 07 - Alterar status do pedido (pronto)
+            meta:
+              id: req_471e1dbb20c54377a460bef1d5c13ee4
+              created: 1781882875505
+              modified: 1781883255726
+              isPrivate: false
+              description: ""
+              sortKey: -1781879792132
+            method: PATCH
+            body:
+              mimeType: application/json
+              text: |-
+                {
+                    "status": "pronto"
+                }
+            headers:
+              - name: Content-Type
+                value: application/json
+            authentication:
+              type: bearer
+              token: "{% response 'body', 'req_a84fc8706aaa404ab24aa46b2ca19752',
+                'b64::JC50b2tlbg==::46b', 'never', 60 %}"
+            settings:
+              renderRequestBody: true
+              encodeUrl: true
+              followRedirects: global
+              cookies:
+                send: true
+                store: true
+              rebuildPath: true
+          - url: "{{BASE_URL}}/pedidos/status/{% response 'body',
+              'req_47b2691ae33b4f248fe69780f0306071',
+              'b64::JC5vcmRlcl9pZA==::46b', 'never', 60 %}"
+            name: 08 - Obter pedido (status pronto)
+            meta:
+              id: req_7e5f8da85fc74dd4aed69774301ac1a4
+              created: 1781883261125
+              modified: 1781885897297
+              isPrivate: false
+              description: ""
+              sortKey: -1781879792032
+            method: GET
+            authentication:
+              type: bearer
+              token: "{% response 'body', 'req_a84fc8706aaa404ab24aa46b2ca19752',
+                'b64::JC50b2tlbg==::46b', 'never', 60 %}"
+            settings:
+              renderRequestBody: true
+              encodeUrl: true
+              followRedirects: global
+              cookies:
+                send: true
+                store: true
+              rebuildPath: true
+          - url: "{{BASE_URL}}/auth/login"
+            name: 09 - Fazer login (atendente)
+            meta:
+              id: req_180fb9926a75472c8a9dfa56b7385b3a
+              created: 1781885964814
+              modified: 1781886141750
+              isPrivate: false
+              description: ""
+              sortKey: -1781879791932
+            method: POST
+            body:
+              mimeType: application/json
+              text: |-
+                {
+                  "email": "atendimento@raizesnordeste.com",
+                  "password": "atendente"
+                }
+            headers:
+              - name: Content-Type
+                value: application/json
+            settings:
+              renderRequestBody: true
+              encodeUrl: true
+              followRedirects: global
+              cookies:
+                send: true
+                store: true
+              rebuildPath: true
+          - url: "{{BASE_URL}}/pagamentos"
+            name: 10 - Pagar pedido
+            meta:
+              id: req_9695f38955f844a892cce49c3a0f4a98
+              created: 1781886191231
+              modified: 1781886462038
+              isPrivate: false
+              description: ""
+              sortKey: -1781879791832
+            method: POST
+            body:
+              mimeType: application/json
+              text: >-
+                {
+                    "order_id": "{% response 'body', 'req_47b2691ae33b4f248fe69780f0306071', 'b64::JC5vcmRlcl9pZA==::46b', 'never', 60 %}",
+                    "cliente_email": "carloscliente@gmail.com",
+                    "cupom_codigo": "CUPOM20"
+                }
+            headers:
+              - name: Content-Type
+                value: application/json
+            authentication:
+              type: bearer
+              token: "{% response 'body', 'req_180fb9926a75472c8a9dfa56b7385b3a',
+                'b64::JC50b2tlbg==::46b', 'never', 60 %}"
+            settings:
+              renderRequestBody: true
+              encodeUrl: true
+              followRedirects: global
+              cookies:
+                send: true
+                store: true
+              rebuildPath: true
+          - url: "{{BASE_URL}}/pedidos/{% response 'body',
+              'req_47b2691ae33b4f248fe69780f0306071',
+              'b64::JC5vcmRlcl9pZA==::46b', 'never', 60 %}"
+            name: 11 - Alterar status do pedido (entregue)
+            meta:
+              id: req_7a58a622de0c4cd0be0c9837f1fec15b
+              created: 1781886476608
+              modified: 1781886845123
+              isPrivate: false
+              description: ""
+              sortKey: -1781879791807
+            method: PATCH
+            body:
+              mimeType: application/json
+              text: |-
+                {
+                    "status": "entregue"
+                }
+            headers:
+              - name: Content-Type
+                value: application/json
+            authentication:
+              type: bearer
+              token: "{% response 'body', 'req_180fb9926a75472c8a9dfa56b7385b3a',
+                'b64::JC50b2tlbg==::46b', 'never', 60 %}"
+            settings:
+              renderRequestBody: true
+              encodeUrl: true
+              followRedirects: global
+              cookies:
+                send: true
+                store: true
+              rebuildPath: true
+          - url: "{{BASE_URL}}/pedidos/status/{% response 'body',
+              'req_47b2691ae33b4f248fe69780f0306071',
+              'b64::JC5vcmRlcl9pZA==::46b', 'never', 60 %}"
+            name: 12 - Obter pedido (status entregue)
+            meta:
+              id: req_3abae31700184b6ca89d832253c38318
+              created: 1781886839910
+              modified: 1781887154566
+              isPrivate: false
+              description: ""
+              sortKey: -1781879791782
+            method: GET
+            authentication:
+              type: bearer
+              token: "{% response 'body', 'req_180fb9926a75472c8a9dfa56b7385b3a',
+                'b64::JC50b2tlbg==::46b', 'never', 60 %}"
+            settings:
+              renderRequestBody: true
+              encodeUrl: true
+              followRedirects: global
+              cookies:
+                send: true
+                store: true
+              rebuildPath: true
+      - name: Outros Cenários
+        meta:
+          id: fld_fb31487d802047c8904c4f8c869558ba
+          created: 1781999177057
+          modified: 1782009080244
+          sortKey: -1781879787445
+          description: ""
+        children:
+          - url: "{{BASE_URL}}/auth/login"
+            name: 02 - Fazer login (como admin)
+            meta:
+              id: req_fbd61b6622d9460ea411674bd0cf2450
+              created: 1781999384032
+              modified: 1782011747303
+              isPrivate: false
+              description: ""
+              sortKey: -1781999324263
+            method: POST
+            body:
+              mimeType: application/json
+              text: |-
+                {
+                  "email": "admin@raizesnordeste.com",
+                  "password": "admin"
+                }
+            headers:
+              - name: Content-Type
+                value: application/json
+            settings:
+              renderRequestBody: true
+              encodeUrl: true
+              followRedirects: global
+              cookies:
+                send: true
+                store: true
+              rebuildPath: true
+          - url: "{{BASE_URL}}/auth/login"
+            name: 01 - Fazer login (como cliente)
+            meta:
+              id: req_24566e26b1774b61afc8cd74e26424e1
+              created: 1781999694081
+              modified: 1782011740049
+              isPrivate: false
+              description: ""
+              sortKey: -1781999694081
+            method: POST
+            body:
+              mimeType: application/json
+              text: |-
+                {
+                  "email": "cliente@raizesnordeste.com",
+                  "password": "cliente"
+                }
+            headers:
+              - name: Content-Type
+                value: application/json
+            settings:
+              renderRequestBody: true
+              encodeUrl: true
+              followRedirects: global
+              cookies:
+                send: true
+                store: true
+              rebuildPath: true
+          - url: "{{BASE_URL}}/pagamentos/log/{{UNIDADE_ID}}"
+            name: 03 - Obter log de pagamentos
+            meta:
+              id: req_0e67a17a4ae8446b8be9aac41d3bc351
+              created: 1782008931375
+              modified: 1782012122351
+              isPrivate: false
+              description: ""
+              sortKey: -1781999324163
+            method: GET
+            authentication:
+              type: bearer
+              token: "{% response 'body', 'req_fbd61b6622d9460ea411674bd0cf2450',
+                'b64::JC50b2tlbg==::46b', 'never', 60 %}"
+            settings:
+              renderRequestBody: true
+              encodeUrl: true
+              followRedirects: global
+              cookies:
+                send: true
+                store: true
+              rebuildPath: true
+          - url: "{{BASE_URL}}/unidades"
+            name: 04 - Acesso sem token
+            meta:
+              id: req_187fe0a1cb97420e8cbca984c70608f7
+              created: 1782009328497
+              modified: 1782012071742
+              isPrivate: false
+              description: ""
+              sortKey: -1781999324063
+            method: GET
+            settings:
+              renderRequestBody: true
+              encodeUrl: true
+              followRedirects: global
+              cookies:
+                send: true
+                store: true
+              rebuildPath: true
+          - url: "{{BASE_URL}}/pagamentos/log/{{UNIDADE_ID}}"
+            name: 05 - Acesso sem permissão
+            meta:
+              id: req_bd855cb2f6ab46f9a3cf3910afd85ad0
+              created: 1782009353841
+              modified: 1782012198054
+              isPrivate: false
+              description: ""
+              sortKey: -1781999323963
+            method: GET
+            authentication:
+              type: bearer
+              token: "{% response 'body', 'req_24566e26b1774b61afc8cd74e26424e1',
+                'b64::JC50b2tlbg==::46b', 'never', 60 %}"
+            settings:
+              renderRequestBody: true
+              encodeUrl: true
+              followRedirects: global
+              cookies:
+                send: true
+                store: true
+              rebuildPath: true
+          - url: "{{BASE_URL}}/estoques/update"
+            name: 06 - Campo obrigatório ausente
+            meta:
+              id: req_123dde4895d24dd29f4a77110bf39fd3
+              created: 1782010373326
+              modified: 1782012825621
+              isPrivate: false
+              description: ""
+              sortKey: -1781999323863
+            method: PATCH
+            body:
+              mimeType: application/json
+              text: |-
+                {
+                    "unidade_id": "{{UNIDADE_ID}}",
+                    "item_id": "eeeeeeee-0000-0000-0000-000000000025",
+                    "quantidade": 1500
+                }
+            headers:
+              - name: Content-Type
+                value: application/json
+            authentication:
+              type: bearer
+              token: "{% response 'body', 'req_fbd61b6622d9460ea411674bd0cf2450',
+                'b64::JC50b2tlbg==::46b', 'never', 60 %}"
+            settings:
+              renderRequestBody: true
+              encodeUrl: true
+              followRedirects: global
+              cookies:
+                send: true
+                store: true
+              rebuildPath: true
+          - url: "{{BASE_URL}}/auth/register"
+            name: 07 - Formato inválido
+            meta:
+              id: req_150a4e84eae742229cbdc0c6985208cd
+              created: 1782010673504
+              modified: 1782013042912
+              isPrivate: false
+              description: ""
+              sortKey: -1781999323763
+            method: POST
+            body:
+              mimeType: application/json
+              text: |-
+                {
+                    "unidade_id": "{{UNIDADE_ID}}",
+                    "email": "robertocarlorOemail.com",
+                    "password": "roberto123"
+                }
+            headers:
+              - name: Content-Type
+                value: application/json
+            settings:
+              renderRequestBody: true
+              encodeUrl: true
+              followRedirects: global
+              cookies:
+                send: true
+                store: true
+              rebuildPath: true
+          - url: "{{BASE_URL}}/pedidos"
+            name: 08 - Estoque insuficiente
+            meta:
+              id: req_ca8c7dbf66334c3cbadc4a9ef684e51f
+              created: 1782010888938
+              modified: 1782014689155
+              isPrivate: false
+              description: ""
+              sortKey: -1781999323663
+            method: POST
+            body:
+              mimeType: application/json
+              text: >-
+                {
+                    "unidade_id": "{{UNIDADE_ID}}",
+                    "items": [
+                        {
+                            "produto_id": "cccccccc-0000-0000-0000-000000000001",
+                            "quantidade": 300
+                        }
+                    ],
+                    "canal_pedido": "web",
+                    "forma_pagamento": "pix"
+                }
+            headers:
+              - name: Content-Type
+                value: application/json
+            authentication:
+              type: bearer
+              token: "{% response 'body', 'req_fbd61b6622d9460ea411674bd0cf2450',
+                'b64::JC50b2tlbg==::46b', 'never', 60 %}"
+            settings:
+              renderRequestBody: true
+              encodeUrl: true
+              followRedirects: global
+              cookies:
+                send: true
+                store: true
+              rebuildPath: true
+          - url: "{{BASE_URL}}/pedidos"
+            name: 09 - Produto inexistente
+            meta:
+              id: req_f6fa11b64cd442f5986412e73e28fc96
+              created: 1782011101496
+              modified: 1782014215335
+              isPrivate: false
+              description: ""
+              sortKey: -1781999323563
+            method: POST
+            body:
+              mimeType: application/json
+              text: >-
+                {
+                    "unidade_id": "{{UNIDADE_ID}}",
+                    "items": [
+                        {
+                            "produto_id": "cccccccc-0000-0000-0000-000000000021",
+                            "quantidade": 3
+                        }
+                    ],
+                    "canal_pedido": "web",
+                    "forma_pagamento": "pix"
+                }
+            headers:
+              - name: Content-Type
+                value: application/json
+            authentication:
+              type: bearer
+              token: "{% response 'body', 'req_fbd61b6622d9460ea411674bd0cf2450',
+                'b64::JC50b2tlbg==::46b', 'never', 60 %}"
+            settings:
+              renderRequestBody: true
+              encodeUrl: true
+              followRedirects: global
+              cookies:
+                send: true
+                store: true
+              rebuildPath: true
+cookieJar:
+  name: Default Jar
+  meta:
+    id: jar_014f29bacdbc1bd7d051fc2ebd44b3cb3d5cb83d
+    created: 1781879533984
+    modified: 1781879533984
+environments:
+  name: Base Environment
+  meta:
+    id: env_014f29bacdbc1bd7d051fc2ebd44b3cb3d5cb83d
+    created: 1781879533982
+    modified: 1781879533982
+    isPrivate: false

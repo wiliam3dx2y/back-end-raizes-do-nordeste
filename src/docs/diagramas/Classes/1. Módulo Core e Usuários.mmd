@@ -1,0 +1,51 @@
+---
+config:
+  theme: base
+---
+classDiagram
+    class Unidade {
+        +UUID id
+        +VARCHAR nome
+        +TIMESTAMP created_at
+    }
+
+    class Usuario {
+        +UUID id
+        +UUID unidade_id
+        +VARCHAR nome
+        +VARCHAR email
+        +TEXT senha
+        +BOOLEAN ativo_pontos
+        +NUMERIC pontos
+        +TEXT role
+    }
+
+    class MovimentacaoPontos {
+        +UUID id
+        +UUID unidade_id
+        +UUID usuario_id
+        +INTEGER pontos
+        +VARCHAR tipo_transacao
+        +TEXT descricao
+        +TIMESTAMP created_at
+    }
+    Unidade "1" <-- "0..*" Usuario : possui
+    Unidade "1" <-- "0..*" MovimentacaoPontos : gerencia
+    Usuario "1" <-- "0..*" MovimentacaoPontos : acumula/gasta
+    class UnitsRepository {
+        +findAllUnits()
+        +findUnitById(string unidade_id)
+    }
+
+    class UsersRepository {
+        +findUserByEmail(string email)
+        +findUserById(string id)
+        +createClient(number unidade_id, string name, string email, any hashedPassword, string role, boolean ativo_pontos)
+        +updateMembershipPoints(number usuario_id, boolean ativo_pontos)
+        +updatetPoints(string usuario_id, number pontos)
+        +registerPointTransaction(ClientPointTransaction transacao)
+    }
+
+    UnitsRepository ..> Unidade : manipula
+    UsersRepository ..> Usuario : manipula
+    UsersRepository ..> MovimentacaoPontos : manipula

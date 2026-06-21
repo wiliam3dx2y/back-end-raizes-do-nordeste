@@ -1,0 +1,3471 @@
+{
+    "openapi": "3.0.0",
+    "info":{
+        "title": "Back-end de Raízes do Nordeste",
+        "version": "1.0.0",
+        "description": "API responsável por gerenciar clientes, unidades e estoques do restaurante Raízes do Nordeste, incluindo autenticação, pagamemtos, cupons de desconto e programa de fidelidade."
+    },
+    "paths": {
+        "/auth/register": {
+            "post": {
+                "summary": "Registrar novo cliente",
+                "description": "Realiza o registro de um novo cliente no sistema. Todo cliente é cadastrado com o role 'cliente' e pode optar por participar do programa de fidelidade.",
+                "tags": ["Autenticação"],
+                "requestBody": {
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "type": "object",
+                                "properties": {
+                                    "unidade_id": {
+                                        "type": "string",
+                                        "format": "uuid"
+                                    },
+                                    "name": {
+                                        "type": "string"
+                                    },
+                                    "email": {
+                                        "type": "string",
+                                        "format": "email"
+                                    },
+                                    "password": {
+                                        "type": "string"
+                                    },
+                                    "ativo_pontos": {
+                                        "type": "boolean"
+                                    }
+                                },
+                                "required": ["unidade_id", "name", "email", "password", "ativo_pontos"]
+                            },
+                            "example": {
+                                "unidade_id": "ffffffff-ffff-ffff-ffff-ffffffffffff",
+                                "name": "Caio Lacerda",
+                                "email": "cliente@teste.com",
+                                "password": "senhaTeste",
+                                "ativo_pontos": true
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "201": {
+                        "description": "Cliente registrado com sucesso",
+                        "content": {
+                            "application/json": {
+                                "example": {
+                                    "message": "Cliente registrado com sucesso"
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "Unidade não encontrada",
+                        "content": {
+                            "application/json": {
+                                "example": {
+                                    "error": "UNIDADE_NAO_ENCONTRADA",
+                                    "message": "Unidade não encontrada no sistema",
+                                    "details": [
+                                        {
+                                            "field": "unidade_id",
+                                            "issue": "Unidade não existe no sistema"
+                                        }
+                                    ],
+                                    "timestamp": "2026-06-10T15:22:28.583Z",
+                                    "path": "/auth/register",
+                                    "requestId": null
+                                }
+                            }
+                        }
+                    },
+                    "409": {
+                        "description": "Usuário já existe",
+                        "content": {
+                            "application/json": {
+                                "example": {
+                                    "error": "USUARIO_JA_EXISTE",
+                                    "message": "Usuário já existe com esse email",
+                                    "details": [
+                                        {
+                                            "field": "email",
+                                            "issue": "Email já cadastrado no sistema"
+                                        }
+                                    ],
+                                    "timestamp": "2026-06-10T15:22:28.583Z",
+                                    "path": "/auth/register",
+                                    "requestId": null
+                                }
+                            }
+                        }
+                    },
+                    "422": {
+                        "description": "Campo de email inválido",
+                        "content": {
+                            "application/json": {
+                                "example": {
+                                    "error": "EMAIL_INVALIDO",
+                                    "message": "Email formato inválido ou ausente",
+                                    "details": [
+                                        {
+                                            "field": "email",
+                                            "issue": "Email inválido ou ausente"
+                                        }
+                                    ],
+                                    "timestamp": "2026-06-10T15:22:28.583Z",
+                                    "path": "/auth/register",
+                                    "requestId": null
+                                }
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Erro interno do servidor",
+                        "content": {
+                            "application/json": {
+                                "example": {
+                                    "error": "ERRO_INTERNO_DO_SERVIDOR",
+                                    "message": "Erro interno do servidor",
+                                    "details": [],
+                                    "timestamp": "2026-06-10T15:22:28.583Z",
+                                    "path": "/auth/register",
+                                    "requestId": null
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/auth/login": {
+            "post": {
+                "summary": "Fazer login",
+                "description": "Fazer login e obter um token de autenticação.",
+                "tags": ["Autenticação"],
+                "requestBody": {
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "type": "object",
+                                "properties": {
+                                    "email": {
+                                        "type": "string",
+                                        "format": "email"
+                                    },
+                                    "password": {
+                                        "type": "string"
+                                    }
+                                },
+                                "required": ["email", "password"]
+                            },
+                            "example": {
+                                "email": "admin@raizesnordeste.com",
+                                "password": "admin"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Login realizado com sucesso",
+                        "content": {
+                            "application/json": {
+                                "example": {
+                                    "message": "Login realizado com sucesso",
+                                    "token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VyX2lkIjoiYmEwMDAwMDAtMDAwMC0wMDAwLTAwMDAtMDAwMDAwMDAwMDAxIiwiaWF0IjoxNjEzNzQyMzQ1LCJleHAiOjE2MTM3NDU5NDV9.SflKxwRJSMeKKF2QT4fwpMeJf36POk6yJV_adQssw5c"
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "Login recusado",
+                        "content": {
+                            "application/json": {
+                                "example": {
+                                    "error": "LOGIN_RECUSADO",
+                                    "message": "Usuário ou senha incorretos",
+                                    "details": [],
+                                    "timestamp": "2026-06-10T15:22:28.583Z",
+                                    "path": "/auth/login",
+                                    "requestId": null
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "Usuário não encontrado no sistema",
+                        "content": {
+                            "application/json": {
+                                "example": {
+                                    "error": "USUARIO_NAO_ENCONTRADO",
+                                    "message": "Usuário não foi encontrado no sistema",
+                                    "details": [
+                                        {
+                                            "field": "email",
+                                            "issue": "Email não encontrado no sistema"
+                                        }
+                                    ],
+                                    "timestamp": "2026-06-10T15:22:28.583Z",
+                                    "path": "/auth/login",
+                                    "requestId": null
+                                }
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Erro interno do servidor",
+                        "content": {
+                            "application/json": {
+                                "example": {
+                                    "error": "ERRO_INTERNO_DO_SERVIDOR",
+                                    "message": "Erro interno do servidor",
+                                    "details": [],
+                                    "timestamp": "2026-06-10T15:22:28.583Z",
+                                    "path": "/auth/login",
+                                    "requestId": null
+                                }
+                            }
+                        }
+                    }
+                }
+            },
+            "get": {
+                "summary": "Obter usuário logado",
+                "description": "Obtem informações do login do usuário autenticado.",
+                "tags": ["Autenticação"],
+                "security": [{"bearerAuth": []}],
+                "responses": {
+                    "200": {
+                        "description": "Usuário autenticado",
+                        "content": {
+                            "application/json": {
+                                "example": {
+                                    "user_id": "ba000000-0000-0000-0000-000000000001",
+                                    "role": "admin"
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "Usuário não autenticado",
+                        "content": {
+                            "application/json": {
+                                "examples": {
+                                    "login_unauthorized": {
+                                        "summary": "Usuário não autenticado",
+                                        "value": {
+                                            "error": "USUARIO_NAO_AUTENTICADO",
+                                            "message": "Usuário não autenticado",
+                                            "details": [],
+                                            "timestamp": "2026-06-10T15:22:28.583Z",
+                                            "path": "/auth/login",
+                                            "requestId": null
+                                        }
+                                    },
+                                    "invalid_token": {
+                                        "summary": "Token inválido ou expirado",
+                                        "value": {
+                                            "error": "USUARIO_NAO_AUTENTICADO",
+                                            "message": "Token inválido ou expirado",
+                                            "details": [],
+                                            "timestamp": "2026-06-10T15:22:28.583Z",
+                                            "path": "/auth/login",
+                                            "requestId": null
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Erro interno do servidor",
+                        "content": {
+                            "application/json": {
+                                "example": {
+                                    "error": "ERRO_INTERNO_DO_SERVIDOR",
+                                    "message": "Erro interno do servidor",
+                                    "details": [],
+                                    "timestamp": "2026-06-10T15:22:28.583Z",
+                                    "path": "/auth/login",
+                                    "requestId": null
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/auth/update/membership": {
+            "patch": {
+                "summary": "Alterar adesão ao programa de fidelidade",
+                "description": "Altera adesão do cliente ao programa de fidelidade.",
+                "tags": ["Autenticação"],
+                "security": [{"bearerAuth": []}],
+                "requestBody": {
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "type": "object",
+                                "properties": {
+                                    "ativo_pontos": {
+                                        "type": "boolean"
+                                    }
+                                },
+                                "required": ["ativo_pontos"]
+                            },
+                            "example": {
+                                "ativo_pontos": true
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Adesão ao programa de fidelidade atualizada com sucesso",
+                        "content": {
+                            "application/json": {
+                                "example": {
+                                    "message": "Adesão ao programa de fidelidade atualizada com sucesso"
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "Usuário não autenticado",
+                        "content": {
+                            "application/json": {
+                                "examples": {
+                                    "login_unauthorized": {
+                                        "summary": "Usuário não autenticado",
+                                        "value": {
+                                            "error": "USUARIO_NAO_AUTENTICADO",
+                                            "message": "Usuário não autenticado",
+                                            "details": [],
+                                            "timestamp": "2026-06-10T15:22:28.583Z",
+                                            "path": "/auth/update/membership",
+                                            "requestId": null
+                                        }
+                                    },
+                                    "invalid_token": {
+                                        "summary": "Token inválido ou expirado",
+                                        "value": {
+                                            "error": "USUARIO_NAO_AUTENTICADO",
+                                            "message": "Token inválido ou expirado",
+                                            "details": [],
+                                            "timestamp": "2026-06-10T15:22:28.583Z",
+                                            "path": "/auth/update/membership",
+                                            "requestId": null
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    "403": {
+                        "description": "Sem permissão",
+                        "content": {
+                            "application/json": {
+                                "example": {
+                                    "error": "SEM_PERMISSAO",
+                                    "message": "Usuário sem permissão",
+                                    "details": [],
+                                    "timestamp": "2026-06-10T15:22:28.583Z",
+                                    "path": "/auth/update/membership",
+                                    "requestId": null
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "Usuário não encontrado",
+                        "content": {
+                            "application/json": {
+                                "example": {
+                                    "error": "USUARIO_NAO_ENCONTRADO",
+                                    "message": "Usuário não encontrado",
+                                    "details": [],
+                                    "timestamp": "2026-06-10T15:22:28.583Z",
+                                    "path": "/auth/update/membership",
+                                    "requestId": null
+                                }
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Erro interno do servidor",
+                        "content": {
+                            "application/json": {
+                                "example": {
+                                    "error": "ERRO_INTERNO_DO_SERVIDOR",
+                                    "message": "Erro interno do servidor",
+                                    "details": [],
+                                    "timestamp": "2026-06-10T15:22:28.583Z",
+                                    "path": "/auth/update/membership",
+                                    "requestId": null
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/unidades": {
+            "get": {
+                "summary": "Listar unidades",
+                "description": "Lista todas as unidades da rede.",
+                "tags": ["Unidades"],
+                "security": [{"bearerAuth": []}],
+                "responses": {
+                    "200": {
+                        "description": "Unidades listadas com sucesso",
+                        "content": {
+                            "application/json": {
+                                "example": [
+                                    {
+                                        "id": "ffffffff-ffff-ffff-ffff-ffffffffffff",
+                                        "nome": "Brigadeiro Galvão - Barra Funda",
+                                        "created_at": "2026-05-14T13:56:44.202Z"
+                                    }
+                                ]
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "Usuário não autenticado",
+                        "content": {
+                            "application/json": {
+                                "examples": {
+                                    "login_unauthorized": {
+                                        "summary": "Usuário não autenticado",
+                                        "value": {
+                                            "error": "USUARIO_NAO_AUTENTICADO",
+                                            "message": "Usuário não autenticado",
+                                            "details": [],
+                                            "timestamp": "2026-06-10T15:22:28.583Z",
+                                            "path": "/unidades",
+                                            "requestId": null
+                                        }
+                                    },
+                                    "invalid_token": {
+                                        "summary": "Token inválido ou expirado",
+                                        "value": {
+                                            "error": "USUARIO_NAO_AUTENTICADO",
+                                            "message": "Token inválido ou expirado",
+                                            "details": [],
+                                            "timestamp": "2026-06-10T15:22:28.583Z",
+                                            "path": "/unidades",
+                                            "requestId": null
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "Nenhuma unidade encontrada",
+                        "content": {
+                            "application/json": {
+                                "example": {
+                                    "error": "NENHUMA_UNIDADE_ENCONTRADA",
+                                    "message": "Nenhuma unidade encontrada no sistema",
+                                    "details": [],
+                                    "timestamp": "2026-06-10T15:22:28.583Z",
+                                    "path": "/unidades",
+                                    "requestId": null
+                                }
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Erro interno do servidor",
+                        "content": {
+                            "application/json": {
+                                "example": {
+                                    "error": "ERRO_INTERNO_DO_SERVIDOR",
+                                    "message": "Erro interno do servidor",
+                                    "details": [],
+                                    "timestamp": "2026-06-10T15:22:28.583Z",
+                                    "path": "/unidades",
+                                    "requestId": null
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/estoques/{id}": {
+            "get": {
+                "summary": "Retornar itens do estoque",
+                "description": "Retorna todos os itens do estoque por unidade.",
+                "tags": ["Estoque"],
+                "security": [{"bearerAuth": []}],
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "string",
+                            "format": "uuid"
+                        },
+                        "description": "ID da unidade"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Estoque encontrado",
+                        "content": {
+                            "application/json": {
+                                "example": [
+                                    {
+                                        "id": "eeeeeeee-0000-0000-0000-000000000040",
+                                        "unidade_id": "ffffffff-ffff-ffff-ffff-ffffffffffff",
+                                        "nome": "Farinha de Milho Flocada (Flocão)",
+                                        "unidade_de_medida": "kg",
+                                        "estoque_atual": "50.00",
+                                        "estoque_minimo": "10.00",
+                                        "created_at": "2026-05-14T13:56:44.202Z"
+                                    },
+                                    {
+                                        "id": "eeeeeeee-0000-0000-0000-000000000042",
+                                        "unidade_id": "ffffffff-ffff-ffff-ffff-ffffffffffff",
+                                        "nome": "Queijo Coalho",
+                                        "unidade_de_medida": "kg",
+                                        "estoque_atual": "4.00",
+                                        "estoque_minimo": "1.00",
+                                        "created_at": "2026-05-14T14:15:26.144Z"
+                                    }
+                                ]
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "Usuário não autenticado",
+                        "content": {
+                            "application/json": {
+                                "examples": {
+                                    "login_unauthorized": {
+                                        "summary": "Usuário não autenticado",
+                                        "value": {
+                                            "error": "USUARIO_NAO_AUTENTICADO",
+                                            "message": "Usuário não autenticado",
+                                            "details": [],
+                                            "timestamp": "2026-06-10T15:22:28.583Z",
+                                            "path": "/estoques/:id",
+                                            "requestId": null
+                                        }
+                                    },
+                                    "invalid_token": {
+                                        "summary": "Token inválido ou expirado",
+                                        "value": {
+                                            "error": "USUARIO_NAO_AUTENTICADO",
+                                            "message": "Token inválido ou expirado",
+                                            "details": [],
+                                            "timestamp": "2026-06-10T15:22:28.583Z",
+                                            "path": "/estoques/:id",
+                                            "requestId": null
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    "403": {
+                        "description": "Sem permissão",
+                        "content": {
+                            "application/json": {
+                                "example": {
+                                    "error": "SEM_PERMISSAO",
+                                    "message": "Usuário sem permissão",
+                                    "details": [],
+                                    "timestamp": "2026-06-10T15:22:28.583Z",
+                                    "path": "/estoques/:id",
+                                    "requestId": null
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "Nenhum item de estoque encontrado",
+                        "content": {
+                            "application/json": {
+                                "example": {
+                                    "error": "NENHUM_ITEM_DE_ESTOQUE_ENCONTRADO",
+                                    "message": "Nenhum item de estoque encontrado para a unidade",
+                                    "details": [],
+                                    "timestamp": "2026-06-10T15:22:28.583Z",
+                                    "path": "/estoques/:id",
+                                    "requestId": null
+                                }
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Erro interno do servidor",
+                        "content": {
+                            "application/json": {
+                                "example": {
+                                    "error": "ERRO_INTERNO_DO_SERVIDOR",
+                                    "message": "Erro interno do servidor",
+                                    "details": [],
+                                    "timestamp": "2026-06-10T15:22:28.583Z",
+                                    "path": "/estoques/:id",
+                                    "requestId": null
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/estoques/update": {
+            "patch": {
+                "summary": "Alterar quantidade de item no estoque",
+                "description": "Abastecer ou resgatar um item no estoque",
+                "tags": ["Estoque"],
+                "security": [{"bearerAuth": []}],
+                "requestBody": {
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "type": "object",
+                                "properties": {
+                                    "unidade_id": {
+                                        "type": "string",
+                                        "format": "uuid"
+                                    },
+                                    "item_id": {
+                                        "type": "string",
+                                        "format": "uuid"
+                                    },
+                                    "quantidade": {
+                                        "type": "number",
+                                        "format": "float"
+                                    },
+                                    "acao": {
+                                        "type": "string",
+                                        "enum": ["adicionar", "remover"]
+                                    }
+                                },
+                                "required": ["unidade_id", "item_id", "quantidade", "acao"]
+                            },
+                            "example": {
+                                "unidade_id": "ffffffff-ffff-ffff-ffff-ffffffffffff",
+                                "item_id": "eeeeeeee-0000-0000-0000-000000000020",
+                                "quantidade": 10,
+                                "acao": "adicionar"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Estoque atualizado com sucesso",
+                        "content": {
+                            "application/json": {
+                                "example": {
+                                    "message": "Item de estoque atualizado com sucesso",
+                                    "item": {
+                                        "id": "eeeeeeee-0000-0000-0000-000000000020",
+                                        "unidade_id": "ffffffff-ffff-ffff-ffff-ffffffffffff",
+                                        "nome": "Feijão Preto",
+                                        "unidade_de_medida": "kg",
+                                        "estoque_atual": "15.00",
+                                        "estoque_minimo": "3.00",
+                                        "created_at": "2026-05-14T14:15:26.144Z"
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Requisição inválida",
+                        "content": {
+                            "application/json": {
+                                "example": {
+                                    "error": "ACAO_INVALIDA",
+                                    "message": "Ação inválida.",
+                                    "details": [
+                                        {
+                                            "field": "acao",
+                                            "issue": "Valor deve ser 'adicionar' ou 'remover'"
+                                        }
+                                    ],
+                                    "timestamp": "2026-06-10T15:22:28.583Z",
+                                    "path": "/estoques/update",
+                                    "requestId": null
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "Usuário não autenticado",
+                        "content": {
+                            "application/json": {
+                                "examples": {
+                                    "login_unauthorized": {
+                                        "summary": "Usuário não autenticado",
+                                        "value": {
+                                            "error": "USUARIO_NAO_AUTENTICADO",
+                                            "message": "Usuário não autenticado",
+                                            "details": [],
+                                            "timestamp": "2026-06-10T15:22:28.583Z",
+                                            "path": "/estoques/update",
+                                            "requestId": null
+                                        }
+                                    },
+                                    "invalid_token": {
+                                        "summary": "Token inválido ou expirado",
+                                        "value": {
+                                            "error": "USUARIO_NAO_AUTENTICADO",
+                                            "message": "Token inválido ou expirado",
+                                            "details": [],
+                                            "timestamp": "2026-06-10T15:22:28.583Z",
+                                            "path": "/estoques/update",
+                                            "requestId": null
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    "403": {
+                        "description": "Sem permissão",
+                        "content": {
+                            "application/json": {
+                                "example": {
+                                    "error": "SEM_PERMISSAO",
+                                    "message": "Usuário sem permissão",
+                                    "details": [],
+                                    "timestamp": "2026-06-10T15:22:28.583Z",
+                                    "path": "/estoques/update",
+                                    "requestId": null
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "Item de estoque ou unidade não encontrada",
+                        "content": {
+                            "application/json": {
+                                "examples": {
+                                    "inventory_item_not_found": {
+                                        "summary": "Item de estoque não encontrado",
+                                        "value": {
+                                            "error": "NENHUM_ITEM_DE_ESTOQUE_ENCONTRADO",
+                                            "message": "Item de estoque eeeeeeee-0000-0000-0000-000000000255 não encontrado",
+                                            "details": [],
+                                            "timestamp": "2026-06-10T15:22:28.583Z",
+                                            "path": "/estoques/update",
+                                            "requestId": null
+                                        }
+                                    },
+                                    "unit_not_found": {
+                                        "summary": "Unidade não encontrada",
+                                        "value": {
+                                            "error": "NENHUMA_UNIDADE_ENCONTRADA",
+                                            "message": "Unidade não encontrada",
+                                            "details": [],
+                                            "timestamp": "2026-06-10T15:22:28.583Z",
+                                            "path": "/estoques/update",
+                                            "requestId": null
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Erro interno do servidor",
+                        "content": {
+                            "application/json": {
+                                "example": {
+                                    "error": "ERRO_INTERNO_DO_SERVIDOR",
+                                    "message": "Erro interno do servidor",
+                                    "details": [],
+                                    "timestamp": "2026-06-10T15:22:28.583Z",
+                                    "path": "/estoques/update",
+                                    "requestId": null
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/estoques/new": {
+            "post": {
+                "summary": "Criar novo item ao estoque",
+                "description": "Cria um novo item no estoque de uma unidade.",
+                "tags": ["Estoque"],
+                "security": [{"bearerAuth": []}],
+                "requestBody": {
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "type": "object",
+                                "properties": {
+                                    "unidade_id": {
+                                        "type": "string",
+                                        "format": "uuid"
+                                    },
+                                    "nome": {
+                                        "type": "string"
+                                    },
+                                    "unidade_de_medida": {
+                                        "type": "string"
+                                    },
+                                    "estoque_minimo": {
+                                        "type": "number",
+                                        "format": "float"
+                                    }
+                                },
+                                "required": ["unidade_id", "nome", "unidade_de_medida", "estoque_minimo"]
+                            },
+                            "example": {
+                                "unidade_id": "-ffffffff-ffff-ffff-ffff-ffffffffffff",
+                                "nome": "Grão-de-bico",
+                                "unidade_de_medida": "kg",
+                                "estoque_minimo": 10
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "201": {
+                        "description": "Item  criado com sucesso",
+                        "content": {
+                            "application/json": {
+                                "example": {
+                                    "item": {
+                                        "id": "eeeeeeee-0000-0000-0000-000000000070",
+                                        "unidade_id": "-ffffffff-ffff-ffff-ffff-ffffffffffff",
+                                        "nome": "Grão-de-bico",
+                                        "unidade_de_medida": "kg",
+                                        "estoque_atual": "0.00",
+                                        "estoque_minimo": "10.00",
+                                        "created_at": "2026-06-10T15:22:28.583Z"
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "Usuário não autenticado",
+                        "content": {
+                            "application/json": {
+                                "examples": {
+                                    "login_unauthorized": {
+                                        "summary": "Usuário não autenticado",
+                                        "value": {
+                                            "error": "USUARIO_NAO_AUTENTICADO",
+                                            "message": "Usuário não autenticado",
+                                            "details": [],
+                                            "timestamp": "2026-06-10T15:22:28.583Z",
+                                            "path": "/estoques/new",
+                                            "requestId": null
+                                        }
+                                    },
+                                    "invalid_token": {
+                                        "summary": "Token inválido ou expirado",
+                                        "value": {
+                                            "error": "USUARIO_NAO_AUTENTICADO",
+                                            "message": "Token inválido ou expirado",
+                                            "details": [],
+                                            "timestamp": "2026-06-10T15:22:28.583Z",
+                                            "path": "/estoques/new",
+                                            "requestId": null
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    "403": {
+                        "description": "Sem permissão",
+                        "content": {
+                            "application/json": {
+                                "example": {
+                                    "error": "SEM_PERMISSAO",
+                                    "message": "Usuário sem permissão",
+                                    "details": [],
+                                    "timestamp": "2026-06-10T15:22:28.583Z",
+                                    "path": "/estoques/new",
+                                    "requestId": null
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "Unidade não encontrada",
+                        "content": {
+                            "application/json": {
+                                "example": {
+                                    "error": "UNIDADE_ENCONTRADA",
+                                    "message": "Unidade não encontrada",
+                                    "details": [],
+                                    "timestamp": "2026-06-10T15:22:28.583Z",
+                                    "path": "/estoques/new",
+                                    "requestId": null
+                                }
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Erro interno do servidor",
+                        "content": {
+                            "application/json": {
+                                "example": {
+                                    "error": "ERRO_INTERNO_DO_SERVIDOR",
+                                    "message": "Erro interno do servidor",
+                                    "details": [],
+                                    "timestamp": "2026-06-10T15:22:28.583Z",
+                                    "path": "/estoques/new",
+                                    "requestId": null
+                                }
+                            }
+                        }
+                    }
+                }   
+            }
+        },
+        "/estoques/log/{id}": {
+            "get": {
+                "summary": "Obter log de alterações do estoque",
+                "description": "Retorna o log de alterações do estoque por id da unidade.",
+                "tags": ["Estoque"],
+                "security": [{"bearerAuth": []}],
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "string",
+                            "format": "uuid"
+                        },
+                        "description": "ID da unidade"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Log de alterações do estoque retornado com sucesso",
+                        "content": {
+                            "application/json": {
+                                "example": [
+                                    {
+                                        "id": "4d357272-aaaa-4f55-eeee-7252540e7fc6",
+                                        "estoque_item_id": "eeeeeeee-0000-0000-0000-000000000030",
+                                        "tipo": "entrada",
+                                        "quantidade": "5.00",
+                                        "created_at": "2026-06-12T11:33:35.523Z",
+                                        "unidade_id": "fffffffff-ffff-ffff-ffff-ffffffffffff",
+                                        "nome": "Arroz Parboilizado"
+                                    },
+                                    {
+                                        "id": "7a7f3f36-3333-41dd-1111-11f3eec6dcf7",
+                                        "estoque_item_id": "eeeeeeee-0000-0000-0000-000000000039",
+                                        "tipo": "saida",
+                                        "quantidade": "5.00",
+                                        "created_at": "2026-06-05T09:42:59.767Z",
+                                        "unidade_id": "22222222-2222-2222-2222-222222222222",
+                                        "nome": "Feijão Preto"
+                                    }
+                                ]
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "Usuário não autenticado",
+                        "content": {
+                            "application/json": {
+                                "examples": {
+                                    "login_unauthorized": {
+                                        "summary": "Usuário não autenticado",
+                                        "value": {
+                                            "error": "USUARIO_NAO_AUTENTICADO",
+                                            "message": "Usuário não autenticado",
+                                            "details": [],
+                                            "timestamp": "2026-06-10T15:22:28.583Z",
+                                            "path": "/estoques/log/:id",
+                                            "requestId": null
+                                        }
+                                    },
+                                    "invalid_token": {
+                                        "summary": "Token inválido ou expirado",
+                                        "value": {
+                                            "error": "USUARIO_NAO_AUTENTICADO",
+                                            "message": "Token inválido ou expirado",
+                                            "details": [],
+                                            "timestamp": "2026-06-10T15:22:28.583Z",
+                                            "path": "/estoques/log/:id",
+                                            "requestId": null
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    "403": {
+                        "description": "Sem permissão",
+                        "content": {
+                            "application/json": {
+                                "example": {
+                                    "error": "SEM_PERMISSAO",
+                                    "message": "Usuário sem permissão",
+                                    "details": [],
+                                    "timestamp": "2026-06-10T15:22:28.583Z",
+                                    "path": "/estoques/log/:id",
+                                    "requestId": null
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "Movimentações de estoque ou unidade não encontradas",
+                        "content": {
+                            "application/json": {
+                                "examples": {
+                                    "inventory_movements_not_found": {
+                                        "summary": "Movimentações de estoque não encontradas",
+                                        "value": {
+                                            "error": "NENHUMA_MOVIMENTACAO_DE_ESTOQUE_ENCONTRADA",
+                                            "message": "Nenhuma movimentação de estoque encontrada para a unidade",
+                                            "details": [],
+                                            "timestamp": "2026-06-10T15:22:28.583Z",
+                                            "path": "/estoques/log/:id",
+                                            "requestId": null
+                                        }
+                                    },
+                                    "unit_not_found": {
+                                        "summary": "Unidade não encontrada",
+                                        "value": {
+                                            "error": "UNIDADE_NAO_ENCONTRADA",
+                                            "message": "Unidade não encontrada",
+                                            "details": [],
+                                            "timestamp": "2026-06-10T15:22:28.583Z",
+                                            "path": "/estoques/log/:id",
+                                            "requestId": null
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Erro interno do servidor",
+                        "content": {
+                            "application/json": {
+                                "example": {
+                                    "error": "ERRO_INTERNO_DO_SERVIDOR",
+                                    "message": "Erro interno do servidor",
+                                    "details": [],
+                                    "timestamp": "2026-06-10T15:22:28.583Z",
+                                    "path": "/estoques/log/:id",
+                                    "requestId": null
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/cardapio/{id}": {
+            "get": {
+                "summary": "Obter cardápio por unidade",
+                "description": "Retorna o cardápio de uma unidade por ID.",
+                "tags": ["Cardápio"],
+                "security": [{"bearerAuth": []}],
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "string",
+                            "format": "uuid"
+                        },
+                        "description": "ID da unidade"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Cardápio retornado com sucesso",
+                        "content": {
+                            "application/json": {
+                                "example": [
+                                    {
+                                        "id": "cccccccc-0000-0000-0000-000000000001",
+                                        "unidade_id": "fffffffff-ffff-ffff-ffff-ffffffffffff",
+                                        "nome": "Feijoada Completa Premium",
+                                        "descricao": "Feijoada tradicional com feijão preto, calabresa, paio, bacon, costelinha e lombo. Acompanha arroz, couve, farofa e fatias de laranja.",
+                                        "ativo": true,
+                                        "preco": "69.90",
+                                        "created_at": "2026-05-14T14:26:19.520Z"
+                                    },
+                                    {
+                                        "id": "cccccccc-0000-0000-0000-000000000002",
+                                        "unidade_id": "fffffffff-ffff-ffff-ffff-ffffffffffff",
+                                        "nome": "Cuscuz Nordestino Tradicional",
+                                        "descricao": "Cuscuz de flocos de milho na manteiga, acompanhado de queijo coalho grelhado, ovos e carne de sol desfiada.",
+                                        "ativo": true,
+                                        "preco": "24.50",
+                                        "created_at": "2026-05-14T14:26:19.520Z"
+                                    }
+                                ]
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "Usuário não autenticado",
+                        "content": {
+                            "application/json": {
+                                "examples": {
+                                    "login_unauthorized": {
+                                        "summary": "Usuário não autenticado",
+                                        "value": {
+                                            "error": "USUARIO_NAO_AUTENTICADO",
+                                            "message": "Usuário não autenticado",
+                                            "details": [],
+                                            "timestamp": "2026-06-10T15:22:28.583Z",
+                                            "path": "/cardapio/:id",
+                                            "requestId": null
+                                        }
+                                    },
+                                    "invalid_token": {
+                                        "summary": "Token inválido ou expirado",
+                                        "value": {
+                                            "error": "USUARIO_NAO_AUTENTICADO",
+                                            "message": "Token inválido ou expirado",
+                                            "details": [],
+                                            "timestamp": "2026-06-10T15:22:28.583Z",
+                                            "path": "/cardapio/:id",
+                                            "requestId": null
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    "403": {
+                        "description": "Sem permissão",
+                        "content": {
+                            "application/json": {
+                                "example": {
+                                    "error": "SEM_PERMISSAO",
+                                    "message": "Usuário sem permissão",
+                                    "details": [],
+                                    "timestamp": "2026-06-10T15:22:28.583Z",
+                                    "path": "/cardapio/:id",
+                                    "requestId": null
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "Cardápio não encontrado",
+                        "content": {
+                            "application/json": {
+                                "example": {
+                                    "error": "CARDAPIO_NAO_ENCONTRADO",
+                                    "message": "Cardápio não encontrado para a unidade",
+                                    "details": [],
+                                    "timestamp": "2026-06-10T15:22:28.583Z",
+                                    "path": "/cardapio/:id",
+                                    "requestId": null
+                                }
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Erro interno do servidor",
+                        "content": {
+                            "application/json": {
+                                "example": {
+                                    "error": "ERRO_INTERNO_DO_SERVIDOR",
+                                    "message": "Erro interno do servidor",
+                                    "details": [],
+                                    "timestamp": "2026-06-10T15:22:28.583Z",
+                                    "path": "/cardapio/:id",
+                                    "requestId": null
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/cardapio": {
+            "post": {
+                "summary": "Criar produto do cardápio",
+                "description": "Cria um novo produto do cardápio para uma unidade.",
+                "tags": ["Cardápio"],
+                "security": [{"bearerAuth": []}],
+                "requestBody": {
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "type": "object",
+                                "properties": {
+                                    "id": {
+                                        "type": "string",
+                                        "format": "uuid"
+                                    },
+                                    "unidade_id": {
+                                        "type": "string",
+                                        "format": "uuid"
+                                    },
+                                    "nome": {
+                                        "type": "string"
+                                    },
+                                    "descricao": {
+                                        "type": "string"
+                                    },
+                                    "preco": {
+                                        "type": "number",
+                                        "format": "float"
+                                    },
+                                    "ativo": {
+                                        "type": "boolean"
+                                    }
+                                },
+                                "required": ["unidade_id", "nome", "descricao", "preco", "ativo"]
+                            },
+                            "example": {
+                                "id": "cccccccc-0000-0000-0000-000000000003",
+                                "unidade_id": "ffffffffff-ffff-ffff-ffff-ffffffffffff",
+                                "nome": "Tapioca",
+                                "descricao": "Massa artesanal feita com pura goma de mandioca, preparada na hora e tostada na medida certa. Leve, crocante por fora e macia por dentro.",
+                                "preco": "12.50",
+                                "ativo": true
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "201": {
+                        "description": "Produto do cardápio criado com sucesso",
+                        "content": {
+                            "application/json": {
+                                "example": {
+                                    "id": "83271d57-aaaa-bbbb-cccc-501aa4aeb02f",
+                                    "unidade_id": "ffffffffff-ffff-ffff-ffff-ffffffffffff",
+                                    "nome": "Tapioca",
+                                    "descricao": "Massa artesanal feita com pura goma de mandioca, preparada na hora e tostada na medida certa. Leve, crocante por fora e macia por dentro.",
+                                    "ativo": true,
+                                    "preco": "12.50",
+                                    "created_at": "2026-06-12T13:16:32.155Z"
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "Usuário não autenticado",
+                        "content": {
+                            "application/json": {
+                                "examples": {
+                                    "login_unauthorized": {
+                                        "summary": "Usuário não autenticado",
+                                        "value": {
+                                            "error": "USUARIO_NAO_AUTENTICADO",
+                                            "message": "Usuário não autenticado",
+                                            "details": [],
+                                            "timestamp": "2026-06-10T15:22:28.583Z",
+                                            "path": "/cardapio",
+                                            "requestId": null
+                                        }
+                                    },
+                                    "invalid_token": {
+                                        "summary": "Token inválido ou expirado",
+                                        "value": {
+                                            "error": "USUARIO_NAO_AUTENTICADO",
+                                            "message": "Token inválido ou expirado",
+                                            "details": [],
+                                            "timestamp": "2026-06-10T15:22:28.583Z",
+                                            "path": "/cardapio",
+                                            "requestId": null
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    "403": {
+                        "description": "Sem permissão",
+                        "content": {
+                            "application/json": {
+                                "example": {
+                                    "error": "SEM_PERMISSAO",
+                                    "message": "Usuário sem permissão",
+                                    "details": [],
+                                    "timestamp": "2026-06-10T15:22:28.583Z",
+                                    "path": "/cardapio",
+                                    "requestId": null
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "Unidade não encontrada",
+                        "content": {
+                            "application/json": {
+                                "example": {
+                                    "error": "UNIDADE_NAO_ENCONTRADA",
+                                    "message": "Unidade não encontrada",
+                                    "details": [],
+                                    "timestamp": "2026-06-10T15:22:28.583Z",
+                                    "path": "/cardapio",
+                                    "requestId": null
+                                }
+                            }
+                        }
+                    },
+                    "409": {
+                        "description": "Conflito",
+                        "content": {
+                            "application/json": {
+                                "example": {
+                                    "error": "ITEM_CARDAPIO_JA_EXISTE",
+                                    "message": "Item de cardápio já existe para a unidade",
+                                    "details": [],
+                                    "timestamp": "2026-06-10T15:22:28.583Z",
+                                    "path": "/cardapio",
+                                    "requestId": null
+                                }
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Erro interno do servidor",
+                        "content": {
+                            "application/json": {
+                                "example": {
+                                    "error": "ERRO_INTERNO_DO_SERVIDOR",
+                                    "message": "Erro interno do servidor",
+                                    "details": [],
+                                    "timestamp": "2026-06-10T15:22:28.583Z",
+                                    "path": "/cardapio",
+                                    "requestId": null
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/cardapio/recipe": {
+            "post": {
+                "summary": "Criar receita de produto do cardápio",
+                "description": "Cria uma nova receita para um produto do cardápio.",
+                "tags": ["Cardápio"],
+                "security": [{"bearerAuth": []}],
+                "requestBody": {
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "type": "object",
+                                "properties": {
+                                    "id": {
+                                        "type": "string",
+                                        "format": "uuid"
+                                    },
+                                    "produto_cardapio_id": {
+                                        "type": "string",
+                                        "format": "uuid"
+                                    },
+                                    "estoque_item_id": {
+                                        "type": "string",
+                                        "format": "uuid"
+                                    },
+                                    "quantidade_usada": {
+                                        "type": "number",
+                                        "format": "float"
+                                    }
+                                },
+                                "required": ["produto_cardapio_id", "estoque_item_id", "quantidade_usada"]
+                            },
+                            "example": {
+                                    "id": "dddddddd-0000-0000-0000-00000000009",
+                                    "produto_cardapio_id": "cccccccc-0000-0000-0000-000000000003",
+                                    "estoque_item_id": "eeeeeeee-0000-0000-0000-000000000041",
+                                    "quantidade_usada": "0.05"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "201": {
+                        "description": "Receita criada com sucesso",
+                        "content": {
+                            "application/json": {
+                                "example": {
+                                    "id": "dddddddd-0000-0000-0000-00000000009",
+                                    "produto_cardapio_id": "cccccccc-0000-0000-0000-000000000003",
+                                    "estoque_item_id": "eeeeeeee-0000-0000-0000-000000000041",
+                                    "quantidade_usada": "0.05",
+                                    "created_at": "2026-06-12T13:30:13.828Z"
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "Usuário não autenticado",
+                        "content": {
+                            "application/json": {
+                                "examples": {
+                                    "login_unauthorized": {
+                                        "summary": "Usuário não autenticado",
+                                        "value": {
+                                            "error": "USUARIO_NAO_AUTENTICADO",
+                                            "message": "Usuário não autenticado",
+                                            "details": [],
+                                            "timestamp": "2026-06-10T15:22:28.583Z",
+                                            "path": "/cardapio/recipe",
+                                            "requestId": null
+                                        }
+                                    },
+                                    "invalid_token": {
+                                        "summary": "Token inválido ou expirado",
+                                        "value": {
+                                            "error": "USUARIO_NAO_AUTENTICADO",
+                                            "message": "Token inválido ou expirado",
+                                            "details": [],
+                                            "timestamp": "2026-06-10T15:22:28.583Z",
+                                            "path": "/cardapio/recipe",
+                                            "requestId": null
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    "403": {
+                        "description": "Sem permissão",
+                        "content": {
+                            "application/json": {
+                                "example": {
+                                    "error": "SEM_PERMISSAO",
+                                    "message": "Usuário sem permissão",
+                                    "details": [],
+                                    "timestamp": "2026-06-10T15:22:28.583Z",
+                                    "path": "/cardapio/recipe",
+                                    "requestId": null
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "Produto do cardápio ou item de estoque não encontrado",
+                        "content": {
+                            "application/json": {
+                                "examples": {
+                                    "menu_item_not_found": {
+                                        "summary": "Produto do cardápio não encontrado",
+                                        "value": {
+                                            "error": "PRODUTO_CARDAPIO_NAO_ENCONTRADO",
+                                            "message": "Produto do cardápio não encontrado",
+                                            "details": [],
+                                            "timestamp": "2026-06-10T15:22:28.583Z",
+                                            "path": "/cardapio/recipe",
+                                            "requestId": null
+                                        }
+                                    },
+                                    "inventory_item_not_found": {
+                                        "summary": "Item de estoque não encontrado",
+                                        "value": {
+                                            "error": "ITEM_ESTOQUE_NAO_ENCONTRADO",
+                                            "message": "Item de estoque não encontrado",
+                                            "details": [],
+                                            "timestamp": "2026-06-10T15:22:28.583Z",
+                                            "path": "/cardapio/recipe",
+                                            "requestId": null
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    "409": {
+                        "description": "Conflito",
+                        "content": {
+                            "application/json": {
+                                "example": {
+                                    "error": "RECEITA_JA_EXISTE",
+                                    "message": "ID de item de receita já existe",
+                                    "details": [],
+                                    "timestamp": "2026-06-10T15:22:28.583Z",
+                                    "path": "/cardapio/recipe",
+                                    "requestId": null
+                                }
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Erro interno do servidor",
+                        "content": {
+                            "application/json": {
+                                "example": {
+                                    "error": "ERRO_INTERNO_DO_SERVIDOR",
+                                    "message": "Erro interno do servidor",
+                                    "details": [],
+                                    "timestamp": "2026-06-10T15:22:28.583Z",
+                                    "path": "/cardapio/recipe",
+                                    "requestId": null
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/cardapio/recipe/{id}": {
+            "get": {
+                "summary": "Obter receita por ID de produto",
+                "description": "Retorna os detalhes de uma receita de produto do cardápio por ID.",
+                "tags": ["Cardápio"],
+                "security": [{"bearerAuth": []}],
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "string",
+                            "format": "uuid"
+                        },
+                        "description": "ID do produto"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Receita retornada com sucesso",
+                        "content": {
+                            "application/json": {
+                                "example": [
+                                    {
+                                        "receita_id": "348d6523-4b36-4ba6-b665-09992088714f",
+                                        "produto_cardapio_id": "cccccccc-0000-0000-0000-000000000001",
+                                        "estoque_item_id": "eeeeeeee-0000-0000-0000-000000000020",
+                                        "nome_ingrediente": "Feijão Preto",
+                                        "unidade_de_medida": "kg",
+                                        "quantidade": "0.18",
+                                        "created_at": "2026-06-18T14:31:02.102Z"
+                                    },
+                                    {
+                                        "receita_id": "7d121f00-7eba-4640-add7-9d629a4e46cc",
+                                        "produto_cardapio_id": "cccccccc-0000-0000-0000-000000000001",
+                                        "estoque_item_id": "eeeeeeee-0000-0000-0000-000000000021",
+                                        "nome_ingrediente": "Linguiça Calabresa",
+                                        "unidade_de_medida": "kg",
+                                        "quantidade": "0.08",
+                                        "created_at": "2026-06-18T14:31:02.102Z"
+                                    },
+                                    {
+                                        "receita_id": "792495c0-ffab-46dc-9cb5-9f9729ec9e4e",
+                                        "produto_cardapio_id": "cccccccc-0000-0000-0000-000000000001",
+                                        "estoque_item_id": "eeeeeeee-0000-0000-0000-000000000022",
+                                        "nome_ingrediente": "Bacon Defumado",
+                                        "unidade_de_medida": "kg",
+                                        "quantidade": "0.05",
+                                        "created_at": "2026-06-18T14:31:02.102Z"
+                                    },
+                                    {
+                                        "receita_id": "c2ce1b08-b147-4982-8f05-47ed0ca15996",
+                                        "produto_cardapio_id": "cccccccc-0000-0000-0000-000000000001",
+                                        "estoque_item_id": "eeeeeeee-0000-0000-0000-000000000023",
+                                        "nome_ingrediente": "Costelinha de Porco Salgada",
+                                        "unidade_de_medida": "kg",
+                                        "quantidade": "0.10",
+                                        "created_at": "2026-06-18T14:31:02.102Z"
+                                    },
+                                    {
+                                        "receita_id": "9b5f85c9-afef-4df6-a20b-c3860e2c2d6f",
+                                        "produto_cardapio_id": "cccccccc-0000-0000-0000-000000000001",
+                                        "estoque_item_id": "eeeeeeee-0000-0000-0000-000000000024",
+                                        "nome_ingrediente": "Carne Seca",
+                                        "unidade_de_medida": "kg",
+                                        "quantidade": "0.08",
+                                        "created_at": "2026-06-18T14:31:02.102Z"
+                                    },
+                                    {
+                                        "receita_id": "7998a957-7e01-4887-9c80-1e443a7b758a",
+                                        "produto_cardapio_id": "cccccccc-0000-0000-0000-000000000001",
+                                        "estoque_item_id": "eeeeeeee-0000-0000-0000-000000000025",
+                                        "nome_ingrediente": "Lombo de Porco Salgado",
+                                        "unidade_de_medida": "kg",
+                                        "quantidade": "0.06",
+                                        "created_at": "2026-06-18T14:31:02.102Z"
+                                    },
+                                    {
+                                        "receita_id": "f7edfbfa-1ff7-4890-ae30-fcfff0ada1ec",
+                                        "produto_cardapio_id": "cccccccc-0000-0000-0000-000000000001",
+                                        "estoque_item_id": "eeeeeeee-0000-0000-0000-000000000026",
+                                        "nome_ingrediente": "Paio",
+                                        "unidade_de_medida": "kg",
+                                        "quantidade": "0.06",
+                                        "created_at": "2026-06-18T14:31:02.102Z"
+                                    },
+                                    {
+                                        "receita_id": "7f9aff83-0b74-4191-90c6-3cb507b57164",
+                                        "produto_cardapio_id": "cccccccc-0000-0000-0000-000000000001",
+                                        "estoque_item_id": "eeeeeeee-0000-0000-0000-000000000027",
+                                        "nome_ingrediente": "Cebola",
+                                        "unidade_de_medida": "kg",
+                                        "quantidade": "0.04",
+                                        "created_at": "2026-06-18T14:31:02.102Z"
+                                    },
+                                    {
+                                        "receita_id": "b207ae06-51d7-47c8-8358-58cb50b396e4",
+                                        "produto_cardapio_id": "cccccccc-0000-0000-0000-000000000001",
+                                        "estoque_item_id": "eeeeeeee-0000-0000-0000-000000000028",
+                                        "nome_ingrediente": "Alho",
+                                        "unidade_de_medida": "kg",
+                                        "quantidade": "0.02",
+                                        "created_at": "2026-06-18T14:31:02.102Z"
+                                    },
+                                    {
+                                        "receita_id": "393600bc-3216-429c-b2da-6d8a2334a098",
+                                        "produto_cardapio_id": "cccccccc-0000-0000-0000-000000000001",
+                                        "estoque_item_id": "eeeeeeee-0000-0000-0000-000000000029",
+                                        "nome_ingrediente": "Louro em Folhas",
+                                        "unidade_de_medida": "g",
+                                        "quantidade": "2.00",
+                                        "created_at": "2026-06-18T14:31:02.102Z"
+                                    },
+                                    {
+                                        "receita_id": "b98cef85-74b1-40e5-b2a6-fb3b3b7b02ce",
+                                        "produto_cardapio_id": "cccccccc-0000-0000-0000-000000000001",
+                                        "estoque_item_id": "eeeeeeee-0000-0000-0000-000000000030",
+                                        "nome_ingrediente": "Couve Manteiga",
+                                        "unidade_de_medida": "kg",
+                                        "quantidade": "0.12",
+                                        "created_at": "2026-06-18T14:31:02.102Z"
+                                    },
+                                    {
+                                        "receita_id": "7b26fc50-a1d6-4a2b-8eb1-496f787e8e76",
+                                        "produto_cardapio_id": "cccccccc-0000-0000-0000-000000000001",
+                                        "estoque_item_id": "eeeeeeee-0000-0000-0000-000000000031",
+                                        "nome_ingrediente": "Farinha de Mandioca",
+                                        "unidade_de_medida": "kg",
+                                        "quantidade": "0.08",
+                                        "created_at": "2026-06-18T14:31:02.102Z"
+                                    },
+                                    {
+                                        "receita_id": "110a8260-6f74-4590-8292-b9efee5039ce",
+                                        "produto_cardapio_id": "cccccccc-0000-0000-0000-000000000001",
+                                        "estoque_item_id": "eeeeeeee-0000-0000-0000-000000000032",
+                                        "nome_ingrediente": "Laranja Pera",
+                                        "unidade_de_medida": "kg",
+                                        "quantidade": "0.15",
+                                        "created_at": "2026-06-18T14:31:02.102Z"
+                                    }
+                                ]
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "Usuário não autenticado",
+                        "content": {
+                            "application/json": {
+                                "examples": {
+                                    "login_unauthorized": {
+                                        "summary": "Usuário não autenticado",
+                                        "value": {
+                                            "error": "USUARIO_NAO_AUTENTICADO",
+                                            "message": "Usuário não autenticado",
+                                            "details": [],
+                                            "timestamp": "2026-06-10T15:22:28.583Z",
+                                            "path": "/cardapio/recipe/:id",
+                                            "requestId": null
+                                        }
+                                    },
+                                    "invalid_token": {
+                                        "summary": "Token inválido ou expirado",
+                                        "value": {
+                                            "error": "USUARIO_NAO_AUTENTICADO",
+                                            "message": "Token inválido ou expirado",
+                                            "details": [],
+                                            "timestamp": "2026-06-10T15:22:28.583Z",
+                                            "path": "/cardapio/recipe/:id",
+                                            "requestId": null
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    "403": {
+                        "description": "Sem permissão",
+                        "content": {
+                            "application/json": {
+                                "example": {
+                                    "error": "SEM_PERMISSAO",
+                                    "message": "Usuário sem permissão",
+                                    "details": [],
+                                    "timestamp": "2026-06-10T15:22:28.583Z",
+                                    "path": "/cardapio/recipe/:id",
+                                    "requestId": null
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "Receita não encontrada",
+                        "content": {
+                            "application/json": {
+                                "example": {
+                                    "error": "RECEITA_NAO_ENCONTRADA",
+                                    "message": "Receita não encontrada para o produto do cardápio",
+                                    "details": [],
+                                    "timestamp": "2026-06-10T15:22:28.583Z",
+                                    "path": "/cardapio/recipe/:id",
+                                    "requestId": null
+                                }
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Erro interno do servidor",
+                        "content": {
+                            "application/json": {
+                                "example": {
+                                    "error": "ERRO_INTERNO_DO_SERVIDOR",
+                                    "message": "Erro interno do servidor",
+                                    "details": [],
+                                    "timestamp": "2026-06-10T15:22:28.583Z",
+                                    "path": "/cardapio/recipe/:id",
+                                    "requestId": null
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/pedidos/{id}": {
+            "get": {
+                "summary": "Retornar todos os pedidos de uma unidade",
+                "description": "Retorna uma lista de pedidos para a unidade especificada por ID.",
+                "tags": ["Pedidos"],
+                "security": [{"bearerAuth": []}],
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "string",
+                            "format": "uuid"
+                        },
+                        "description": "ID da unidade"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Pedidos retornados com sucesso",
+                        "content": {
+                            "application/json": {
+                                "example": [
+                                        {
+                                            "id": "f0000000-0000-0000-0000-000000000004",
+                                            "total": "13.80",
+                                            "canal_pedido": "app",
+                                            "forma_pagamento": "pix",
+                                            "status": "pronto",
+                                            "created_at": "2026-05-22T12:33:05.666Z"
+                                        },
+                                        {
+                                            "id": "f0000000-0000-0000-0000-000000000001",
+                                            "total": "29.40",
+                                            "canal_pedido": "balcão",
+                                            "forma_pagamento": "debito",
+                                            "status": "cozinha",
+                                            "created_at": "2026-05-15T09:11:02.416Z"
+                                        }
+                                ]
+                            }
+                        }
+                    },
+                    "401": { 
+                        "description": "Usuário não autenticado",
+                        "content": {
+                            "application/json": {
+                                "examples": {
+                                    "login_unauthorized": {
+                                        "summary": "Usuário não autenticado",
+                                        "value": {
+                                            "error": "USUARIO_NAO_AUTENTICADO",
+                                            "message": "Usuário não autenticado",
+                                            "details": [],
+                                            "timestamp": "2026-06-10T15:22:28.583Z",
+                                            "path": "/pedidos/:id",
+                                            "requestId": null
+                                        }
+                                    },
+                                    "invalid_token": {
+                                        "summary": "Token inválido ou expirado",
+                                        "value": {
+                                            "error": "USUARIO_NAO_AUTENTICADO",
+                                            "message": "Token inválido ou expirado",
+                                            "details": [],
+                                            "timestamp": "2026-06-10T15:22:28.583Z",
+                                            "path": "/pedidos/:id",
+                                            "requestId": null
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    "403": {
+                        "description": "Sem permissão",
+                        "content": {
+                            "application/json": {
+                                "example": {
+                                    "error": "SEM_PERMISSAO",
+                                    "message": "Usuário sem permissão",
+                                    "details": [],
+                                    "timestamp": "2026-06-10T15:22:28.583Z",
+                                    "path": "/pedidos/:id",
+                                    "requestId": null
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "Pedido não encontrado",
+                        "content": {
+                            "application/json": {
+                                "example": {
+                                    "error": "PEDIDO_NAO_ENCONTRADO",
+                                    "message": "Nenhum pedido encontrado para a unidade",
+                                    "details": [],
+                                    "timestamp": "2026-06-10T15:22:28.583Z",
+                                    "path": "/pedidos/:id",
+                                    "requestId": null
+                                }
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Erro interno do servidor",
+                        "content": {
+                            "application/json": {
+                                "example": {
+                                    "error": "ERRO_INTERNO_DO_SERVIDOR",
+                                    "message": "Erro interno do servidor",
+                                    "details": [],
+                                    "timestamp": "2026-06-10T15:22:28.583Z",
+                                    "path": "/pedidos/:id",
+                                    "requestId": null
+                                }
+                            }
+                        }
+                    }
+                }
+            },
+            "patch": {
+                "summary": "Atualizar status de um pedido",
+                "description": "Atualiza o status de um pedido por ID.",
+                "tags": ["Pedidos"],
+                "security": [{"bearerAuth": []}],
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "string",
+                            "format": "uuid"
+                        },
+                        "description": "ID do pedido"
+                    }
+                ],
+                "requestBody": {
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "type": "object",
+                                "properties": {
+                                    "status": {
+                                        "type": "string",
+                                        "enum": ["cozinha", "pronto", "entregue", "cancelado"]
+                                    }
+                                },
+                                "required": ["status"]
+                            },
+                            "example": {
+                                "status": "pronto"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Status do pedido atualizado com sucesso",
+                        "content": {
+                            "application/json": {
+                                "example": {
+                                    "message": "Status do pedido atualizado com sucesso"
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Atualização de status não permitida",
+                        "content": {
+                            "application/json": {
+                                "example": {
+                                    "error": "ALTERACAO_STATUS_PEDIDO_INDISPONIVEL",
+                                    "message": "Não é permitido alterar o status de um pedido entregue ou cancelado",
+                                    "details": [],
+                                    "timestamp": "2026-06-10T15:22:28.583Z",
+                                    "path": "/pedidos/:id",
+                                    "requestId": null
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "Usuário não autenticado",
+                        "content": {
+                            "application/json": {
+                                "examples": {
+                                    "login_unauthorized": {
+                                        "summary": "Usuário não autenticado",
+                                        "value": {
+                                            "error": "USUARIO_NAO_AUTENTICADO",
+                                            "message": "Usuário não autenticado",
+                                            "details": [],
+                                            "timestamp": "2026-06-10T15:22:28.583Z",
+                                            "path": "/pedidos/:id",
+                                            "requestId": null
+                                        }
+                                    },
+                                    "invalid_token": {
+                                        "summary": "Token inválido ou expirado",
+                                        "value": {
+                                            "error": "USUARIO_NAO_AUTENTICADO",
+                                            "message": "Token inválido ou expirado",
+                                            "details": [],
+                                            "timestamp": "2026-06-10T15:22:28.583Z",
+                                            "path": "/pedidos/:id",
+                                            "requestId": null
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    "403": {
+                        "description": "Sem permissão",
+                        "content": {
+                            "application/json": {
+                                "example": {
+                                    "error": "SEM_PERMISSAO",
+                                    "message": "Sem permissão",
+                                    "details": [],
+                                    "timestamp": "2026-06-10T15:22:28.583Z",
+                                    "path": "/pedidos/:id",
+                                    "requestId": null
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "Pedido não encontrado",
+                        "content": {
+                            "application/json": {
+                                "example": {
+                                    "error": "PEDIDO_NAO_ENCONTRADO",
+                                    "message": "Pedido não encontrado",
+                                    "details": [],
+                                    "timestamp": "2026-06-10T15:22:28.583Z",
+                                    "path": "/pedidos/:id",
+                                    "requestId": null
+                                }
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Erro interno do servidor",
+                        "content": {
+                            "application/json": {
+                                "example": {
+                                    "error": "ERRO_INTERNO_DO_SERVIDOR",
+                                    "message": "Erro interno do servidor",
+                                    "details": [],
+                                    "timestamp": "2026-06-10T15:22:28.583Z",
+                                    "path": "/pedidos/:id",
+                                    "requestId": null
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/pedidos/status/:id": {
+            "get": {
+                "summary": "Obter detalhes de um pedido por ID",
+                "description": "Retorna os detalhes de um pedido, incluindo status, por ID.",
+                "tags": ["Pedidos"],
+                "security": [{"bearerAuth": []}],
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "string",
+                            "format": "uuid"
+                        },
+                        "description": "ID do pedido"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Detalhes do pedido retornados com sucesso",
+                        "content": {
+                            "application/json": {
+                                "example": {
+                                    "id": "ffffffff-0000-0000-0000-000000000001",
+                                    "unidade_id": "ffffffff-ffff-ffff-ffff-ffffffffffff",
+                                    "total": "69.90",
+                                    "canal_pedido": "balcão",
+                                    "forma_pagamento": "dinheiro",
+                                    "status": "cozinha",
+                                    "created_at": "2026-06-14T05:25:15.325Z"
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "Usuário não autenticado",
+                        "content": {
+                            "application/json": {
+                                "examples": {
+                                    "login_unauthorized": {
+                                        "summary": "Usuário não autenticado",
+                                        "value": {
+                                            "error": "USUARIO_NAO_AUTENTICADO",
+                                            "message": "Usuário não autenticado",
+                                            "details": [],
+                                            "timestamp": "2026-06-10T15:22:28.583Z",
+                                            "path": "/pedidos/status/:id",
+                                            "requestId": null
+                                        }
+                                    },
+                                    "invalid_token": {
+                                        "summary": "Token inválido ou expirado",
+                                        "value": {
+                                            "error": "USUARIO_NAO_AUTENTICADO",
+                                            "message": "Token inválido ou expirado",
+                                            "details": [],
+                                            "timestamp": "2026-06-10T15:22:28.583Z",
+                                            "path": "/pedidos/status/:id",
+                                            "requestId": null
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    "403": {
+                        "description": "Sem permissão",
+                        "content": {
+                            "application/json": {
+                                "example": {
+                                    "error": "FORBIDDEN",
+                                    "message": "Usuário sem permissão",
+                                    "details": [],
+                                    "timestamp": "2026-06-10T15:22:28.583Z",
+                                    "path": "/pedidos/status/:id",
+                                    "requestId": null
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "Pedido não encontrado",
+                        "content": {
+                            "application/json": {
+                                "example": {
+                                    "error": "PEDIDO_NAO_ENCONTRADO",
+                                    "message": "Pedido não encontrado",
+                                    "details": [],
+                                    "timestamp": "2026-06-10T15:22:28.583Z",
+                                    "path": "/pedidos/status/:id",
+                                    "requestId": null
+                                }
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Erro interno do servidor",
+                        "content": {
+                            "application/json": {
+                                "example": {
+                                    "error": "ERRO_INTERNO_DO_SERVIDOR",
+                                    "message": "Erro interno do servidor",
+                                    "details": [],
+                                    "timestamp": "2026-06-10T15:22:28.583Z",
+                                    "path": "/pedidos/status/:id",
+                                    "requestId": null
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/pedidos/items/{id}": {
+            "get": {
+                "summary": "Retornar todos os produtos de um pedido",
+                "description": "Retorna todos os produtos de um pedido.",
+                "tags": ["Pedidos"],
+                "security": [{"bearerAuth": []}],
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "string",
+                            "format": "uuid"
+                        },
+                        "description": "ID do pedido"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Produtos do pedido retornados com sucesso",
+                        "content": {
+                            "application/json": {
+                                "example": [ 
+                                       {
+                                            "id": "ffffffff-0000-0000-0000-000000000001",
+                                            "total": "69.90",
+                                            "canal_pedido": "balcão",
+                                            "forma_pagamento": "dinheiro",
+                                            "status": "cozinha",
+                                            "created_at": "2026-06-18T14:31:02.106Z"
+                                        }
+                                ]
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "Usuário não autenticado",
+                        "content": {
+                            "application/json": {
+                                "examples": {
+                                    "login_unauthorized": {
+                                        "summary": "Usuário não autenticado",
+                                        "value": {
+                                            "error": "USUARIO_NAO_AUTENTICADO",
+                                            "message": "Usuário não autenticado",
+                                            "details": [],
+                                            "timestamp": "2026-06-10T15:22:28.583Z",
+                                            "path": "/pedidos/items/:id",
+                                            "requestId": null
+                                        }
+                                    },
+                                    "invalid_token": {
+                                        "summary": "Token inválido ou expirado",
+                                        "value": {
+                                            "error": "USUARIO_NAO_AUTENTICADO",
+                                            "message": "Token inválido ou expirado",
+                                            "details": [],
+                                            "timestamp": "2026-06-10T15:22:28.583Z",
+                                            "path": "/pedidos/items/:id",
+                                            "requestId": null
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    "403": { 
+                        "description": "Sem permissão",
+                        "content": {
+                            "application/json": {
+                                "example": {
+                                    "error": "USUARIO_SEM_PERMISSAO",
+                                    "message": "Usuário sem permissão",
+                                    "details": [],
+                                    "timestamp": "2026-06-10T15:22:28.583Z",
+                                    "path": "/pedidos/items/:id",
+                                    "requestId": null
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "Nenhum item encontrado para o pedido",
+                        "content": {
+                            "application/json": {
+                                "example": {
+                                    "error": "ITEM_PEDIDO_NAO_ENCONTRADO",
+                                    "message": "Nenhum item encontrado para o pedido",
+                                    "details": [],
+                                    "timestamp": "2026-06-10T15:22:28.583Z",
+                                    "path": "/pedidos/items/:id",
+                                    "requestId": null
+                                }
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Erro interno do servidor",
+                        "content": {
+                            "application/json": {
+                                "example": {
+                                    "error": "ERRO_INTERNO_DO_SERVIDOR",
+                                    "message": "Erro interno do servidor",
+                                    "details": [],
+                                    "timestamp": "2026-06-10T15:22:28.583Z",
+                                    "path": "/pedidos/items/:id",
+                                    "requestId": null
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/pedidos": {
+            "post": {
+                "summary": "Criar um novo pedido",
+                "description": "Cria um novo pedido para uma unidade.",
+                "tags": ["Pedidos"],
+                "security": [{"bearerAuth": []}],
+                "requestBody": {
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "type": "object",
+                                "properties": {
+                                    "unidade_id": {
+                                        "type": "string",
+                                        "format": "uuid"
+                                    },
+                                    "items": {
+                                        "type": "array",
+                                        "items": {
+                                            "type": "object",
+                                            "properties": {
+                                                "produto_id": {
+                                                    "type": "string",
+                                                    "format": "uuid"
+                                                },
+                                                "quantidade": {
+                                                    "type": "integer",
+                                                    "minimum": 1
+                                                }
+                                            },
+                                            "required": ["produto_id", "quantidade"]
+                                        }
+                                    },
+                                    "canal_pedido": {
+                                        "type": "string",
+                                        "enum": ["app", "balcão", "totem", "web"]
+                                    },
+                                    "forma_pagamento": {
+                                        "type": "string",
+                                        "enum": ["dinheiro", "cartão", "pix"]
+                                    }
+                                },
+                                "required": ["unidade_id", "canal_pedido", "forma_pagamento", "items"]
+                            },
+                            "example": {
+                                "unidade_id": "ffffffff-ffff-ffff-ffff-ffffffffffff",
+                                "items": [
+                                    {
+                                        "produto_id": "cccccccc-0000-0000-0000-000000000001",
+                                        "quantidade": 2
+                                    }
+                                ],
+                                "canal_pedido": "totem",
+                                "forma_pagamento": "pix"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "201": {
+                        "description": "Pedido criado com sucesso",
+                        "content": {
+                            "application/json": {
+                                "example": {
+                                    "order_id": "fae84b65-aaaa-4416-cccc-6485f5094aa7",
+                                    "message": "Pedido criado com sucesso"
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "Usuário não autenticado",
+                        "content": {
+                            "application/json": {
+                                "examples": {
+                                    "login_unauthorized": {
+                                        "summary": "Usuário não autenticado",
+                                        "value": {
+                                            "error": "USUARIO_NAO_AUTENTICADO",
+                                            "message": "Usuário não autenticado",
+                                            "details": [],
+                                            "timestamp": "2026-06-10T15:22:28.583Z",
+                                            "path": "/pedidos",
+                                            "requestId": null
+                                        }
+                                    },
+                                    "invalid_token": {
+                                        "summary": "Token inválido ou expirado",
+                                        "value": {
+                                            "error": "USUARIO_NAO_AUTENTICADO",
+                                            "message": "Token inválido ou expirado",
+                                            "details": [],
+                                            "timestamp": "2026-06-10T15:22:28.583Z",
+                                            "path": "/pedidos",
+                                            "requestId": null
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    "403": {
+                        "description": "Sem permissão",
+                        "content": {
+                            "application/json": {
+                                "example": {
+                                    "error": "SEM_PERMISSAO",
+                                    "message": "Usuário sem permissão",
+                                    "details": [],
+                                    "timestamp": "2026-06-10T15:22:28.583Z",
+                                    "path": "/pedidos",
+                                    "requestId": null
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "Recurso não encontrado",
+                        "content": {
+                            "application/json": {
+                                "examples": {
+                                    "unit_not_found": {
+                                        "summary": "Unidade não encontrada",
+                                        "value": {
+                                            "error": "UNIDADE_NAO_ENCONTRADA",
+                                            "message": "Unidade não encontrada",
+                                            "details": [],
+                                            "timestamp": "2026-06-10T15:22:28.583Z",
+                                            "path": "/pedidos",
+                                            "requestId": null
+                                        }
+                                    },
+                                    "product_not_found": {
+                                        "summary": "Produto não encontrado ou inativo",
+                                        "value": {
+                                            "error": "PRODUTO_NAO_ENCONTRADO_OU_INATIVO",
+                                            "message": "Produto cccccccc-0000-0000-0000-000000000001 não encontrado ou inativo",
+                                            "details": [],
+                                            "timestamp": "2026-06-10T15:22:28.583Z",
+                                            "path": "/pedidos",
+                                            "requestId": null
+                                        }
+                                    },
+                                    "recipe_not_found": {
+                                        "summary": "Receita não encontrada para o produto",
+                                        "value": {
+                                            "error": "RECEITA_NAO_ENCONTRADA",
+                                            "message": "Receita não encontrada para o produto cccccccc-0000-0000-0000-000000000001",
+                                            "details": [],
+                                            "timestamp": "2026-06-10T15:22:28.583Z",
+                                            "path": "/pedidos",
+                                            "requestId": null
+                                        }
+                                    },
+                                    "stock_item_not_found": {
+                                        "summary": "Item de estoque não encontrado",
+                                        "value": {
+                                            "error": "ITEM_ESTOQUE_NAO_ENCONTRADO",
+                                            "message": "Item de estoque eeeeeeee-0000-0000-0000-000000000012 não encontrado",
+                                            "details": [],
+                                            "timestamp": "2026-06-10T15:22:28.583Z",
+                                            "path": "/pedidos",
+                                            "requestId": null
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    "422": {
+                        "description": "Quantidade insuficiente em estoque",
+                        "content": {
+                            "application/json": {
+                                "example": {
+                                    "error": "ESTOQUE_INSUFICIENTE",
+                                    "message": "Quantidade insuficiente em estoque para o item eeeeeeee-0000-0000-0000-000000000016. Disponível: 8, Necessário: 12",
+                                    "details": [],
+                                    "timestamp": "2026-06-10T15:22:28.583Z",
+                                    "path": "/pedidos",
+                                    "requestId": null
+                                }
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Erro interno do servidor",
+                        "content": {
+                            "application/json": { 
+                                "example": {
+                                    "error": "ERRO_INTERNO_DO_SERVIDOR",
+                                    "message": "Erro interno do servidor",
+                                    "details": [],
+                                    "timestamp": "2026-06-10T15:22:28.583Z",
+                                    "path": "/pedidos",
+                                    "requestId": null
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/pedidos/cancel/{id}": {
+            "patch": {
+                "summary": "Cancelar um pedido",
+                "description": "Cancela um pedido por ID.",
+                "tags": ["Pedidos"],
+                "security": [{"bearerAuth": []}],
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "string",
+                            "format": "uuid"
+                        },
+                        "description": "ID do pedido"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Pedido cancelado com sucesso",
+                        "content": {
+                            "application/json": {
+                                "example": {
+                                    "message": "Pedido cancelado com sucesso"
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "Pedido não encontrado",
+                        "content": {
+                            "application/json": {
+                                "example": {
+                                    "error": "PEDIDO_NAO_ENCONTRADO",
+                                    "message": "Pedido não encontrado",
+                                    "details": [],
+                                    "timestamp": "2026-06-10T15:22:28.583Z",
+                                    "path": "/pedidos/cancel/:id",
+                                    "requestId": null
+                                }
+                            }
+                        }
+                    },
+                    "409": {
+                        "description": "Cancelamento não permitido",
+                        "content": {
+                            "application/json": {
+                                "examples": {
+                                    "order_already_cancelled": {
+                                        "summary": "Pedido já cancelado",
+                                        "value": {
+                                            "error": "PEDIDO_JA_CANCELADO",
+                                            "message": "Pedido já está cancelado",
+                                            "details": [],
+                                            "timestamp": "2026-06-10T15:22:28.583Z",
+                                            "path": "/pedidos/cancel/:id",
+                                            "requestId": null
+                                        }
+                                    },
+                                    "order_already_delivered": {
+                                        "summary": "Pedido já entregue",
+                                        "value": {
+                                            "error": "PEDIDO_JA_ENTREGUE",
+                                            "message": "Pedido já foi entregue e não pode ser cancelado",
+                                            "details": [],
+                                            "timestamp": "2026-06-10T15:22:28.583Z",
+                                            "path": "/pedidos/cancel/:id",
+                                            "requestId": null
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Erro interno do servidor",
+                        "content": {
+                            "application/json": {
+                                "example": {
+                                    "error": "ERRO_INTERNO_DO_SERVIDOR",
+                                    "message": "Erro interno do servidor",
+                                    "details": [],
+                                    "timestamp": "2026-06-10T15:22:28.583Z",
+                                    "path": "/pedidos/cancel/:id",
+                                    "requestId": null
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/pagamentos": {
+            "post": {
+                "summary": "Realizar pagamento de um pedido",
+                "description": "Realiza o pagamento de um pedido.",
+                "tags": ["Pagamentos"],
+                "security": [{"bearerAuth": []}],
+                "requestBody": {
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "type": "object",
+                                "properties": {
+                                    "order_id": {
+                                        "type": "string",
+                                        "format": "uuid"
+                                    },
+                                    "cliente_email": {
+                                        "type": "string",
+                                        "format": "email"
+                                    },
+                                    "cupon_codigo": {
+                                        "type": "string"
+                                    }
+                                },
+                                "required": ["order_id", "cliente_email"]
+                            },
+                            "example": {
+                                "order_id": "0e5c1f33-9f95-4346-aa11-13218a587250",
+                                "cliente_email": "cliente@email.com",
+                                "cupom_codigo": "CUPOM10"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Pagamento realizado com sucesso",
+                        "content": {
+                            "application/json": {
+                                "example": {
+                                    "message": "Pagamento aprovado"
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Pagamento recusado",
+                        "content": {
+                            "application/json": {
+                                "examples": {
+                                    "payment_refused": {
+                                        "summary": "Pagamento recusado",
+                                        "value": {
+                                            "error": "PAGAMENTO_RECUSADO",
+                                            "message": "Pagamento recusado",
+                                            "details": [],
+                                            "timestamp": "2026-06-10T15:22:28.583Z",
+                                            "path": "/pagamentos",
+                                            "requestId": null
+                                        }
+                                    },
+                                    "payment_already_approved": {
+                                        "summary": "Pagamento já aprovado",
+                                        "value": {
+                                            "error": "PAGAMENTO_JA_APROVADO",
+                                            "message": "Pagamento já aprovado",
+                                            "details": [],
+                                            "timestamp": "2026-06-10T15:22:28.583Z",
+                                            "path": "/pagamentos",
+                                            "requestId": null
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "Usuário não autenticado",
+                        "content": {
+                            "application/json": {
+                                "examples": {
+                                    "login_unauthorized": {
+                                        "summary": "Usuário não autenticado",
+                                        "value": {
+                                            "error": "USUARIO_NAO_AUTENTICADO",
+                                            "message": "Usuário não autenticado",
+                                            "details": [],
+                                            "timestamp": "2026-06-10T15:22:28.583Z",
+                                            "path": "/pagamentos",
+                                            "requestId": null
+                                        }
+                                    },
+                                    "invalid_token": {
+                                        "summary": "Token inválido ou expirado",
+                                        "value": {
+                                            "error": "USUARIO_NAO_AUTENTICADO",
+                                            "message": "Token inválido ou expirado",
+                                            "details": [],
+                                            "timestamp": "2026-06-10T15:22:28.583Z",
+                                            "path": "/pagamentos",
+                                            "requestId": null
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    "403": {
+                        "description": "Sem permissão",
+                        "content": {
+                            "application/json": {
+                                "example": {
+                                    "error": "SEM_PERMISSAO",
+                                    "message": "Usuário sem permissão",
+                                    "details": [],
+                                    "timestamp": "2026-06-10T15:22:28.583Z",
+                                    "path": "/pagamentos",
+                                    "requestId": null
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "Recurso não encontrado",
+                        "content": {
+                            "application/json": {
+                                "examples": {
+                                    "order_not_found": {
+                                        "summary": "Pedido ou pagamento não encontrado",
+                                        "value": {
+                                            "error": "PEDIDO_OU_PAGAMENTO_NAO_ENCONTRADO",
+                                            "message": "Pedido ou pagamento não encontrado",
+                                            "details": [],
+                                            "timestamp": "2026-06-10T15:22:28.583Z",
+                                            "path": "/pagamentos",
+                                            "requestId": null
+                                        }
+                                    },
+                                    "user_not_found": {
+                                        "summary": "Usuário não encontrado",
+                                        "value": {
+                                            "error": "USUARIO_NAO_ENCONTRADO",
+                                            "message": "Usuário não encontrado",
+                                            "details": [],
+                                            "timestamp": "2026-06-10T15:22:28.583Z",
+                                            "path": "/pagamentos",
+                                            "requestId": null
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Erro interno do servidor ou gateway de pagamento",
+                        "content": {
+                            "application/json": {
+                                "examples": {
+                                    "internal_server_error": {
+                                        "summary": "Erro interno do servidor",
+                                        "value": {
+                                            "error": "ERRO_INTERNO_DO_SERVIDOR",
+                                            "message": "Erro interno do servidor",
+                                            "details": [],
+                                            "timestamp": "2026-06-10T15:22:28.583Z",
+                                            "path": "/pagamentos",
+                                            "requestId": null
+                                        }
+                                    },
+                                    "payment_pending": {
+                                        "summary": "Pagamento pendente",
+                                        "value": {
+                                            "error": "PAGAMENTO_PENDENTE",
+                                            "message": "Pagamento pendente, tente novamente mais tarde",
+                                            "details": [],
+                                            "timestamp": "2026-06-10T15:22:28.583Z",
+                                            "path": "/pagamentos",
+                                            "requestId": null
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/pagamentos/log/{id}": {
+            "get": {
+                "summary": "Obter log de pagamento",
+                "description": "Obtém o log de um pagamento por ID da unidade.",
+                "tags": ["Pagamentos"],
+                "security": [{"bearerAuth": []}],
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "string",
+                            "format": "uuid"
+                        },
+                        "description": "ID da unidade"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Log de pagamento retornado com sucesso",
+                        "content": {
+                            "application/json": {
+                                "example": [
+                                    {
+                                        "id": "78078fa5-5a8c-4520-9135-81aa879b71e4",
+                                        "pedido_id": "f98b27cc-4f3b-4b67-b317-187fde20ffcf",
+                                        "unidade_id": "ffffffff-ffff-ffff-ffff-ffffffffffff",
+                                        "metodo_pagamento": "dinheiro",
+                                        "valor": "69.90",
+                                        "status": "pago",
+                                        "created_at": "2026-06-19T10:38:40.904Z"
+                                    },
+                                    {
+                                        "id": "0a08771e-7864-4a47-a49f-4404de061fee",
+                                        "pedido_id": "f98b27cc-4f3b-4b67-b317-187fde20ffcf",
+                                        "unidade_id": "ffffffff-ffff-ffff-ffff-ffffffffffff",
+                                        "metodo_pagamento": "dinheiro",
+                                        "valor": "69.90",
+                                        "status": "pendente",
+                                        "created_at": "2026-06-19T10:38:38.312Z"
+                                    }
+                                ]
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "Usuário não autenticado",
+                        "content": {
+                            "application/json": {
+                                "examples": {
+                                    "login_unauthorized": {
+                                        "summary": "Usuário não autenticado",
+                                        "value": {
+                                            "error": "USUARIO_NAO_AUTENTICADO",
+                                            "message": "Usuário não autenticado",
+                                            "details": [],
+                                            "timestamp": "2026-06-10T15:22:28.583Z",
+                                            "path": "/pagamentos/log/:id",
+                                            "requestId": null
+                                        }
+                                    },
+                                    "invalid_token": {
+                                        "summary": "Token inválido ou expirado",
+                                        "value": {
+                                            "error": "USUARIO_NAO_AUTENTICADO",
+                                            "message": "Token inválido ou expirado",
+                                            "details": [],
+                                            "timestamp": "2026-06-10T15:22:28.583Z",
+                                            "path": "/pagamentos/log/:id",
+                                            "requestId": null
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    "403": {
+                        "description": "Sem permissão",
+                        "content": { 
+                            "application/json": {
+                                "example": {
+                                    "error": "SEM_PERMISSAO",
+                                    "message": "Usuário sem permissão",
+                                    "details": [],
+                                    "timestamp": "2026-06-10T15:22:28.583Z",
+                                    "path": "/pagamentos/log/:id",
+                                    "requestId": null
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "Log de pagamento não encontrado para a unidade",
+                        "content": {
+                            "application/json": {
+                                "example": {
+                                    "error": "NENHUM_REGISTRO_NO_LOG_DE_PAGAMENTO",
+                                    "message": "Nenhum registro de pagamento encontrado para a unidade",
+                                    "details": [],
+                                    "timestamp": "2026-06-10T15:22:28.583Z",
+                                    "path": "/pagamentos/log/:id",
+                                    "requestId": null
+                                }
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Erro interno do servidor",
+                        "content": {
+                            "application/json": {
+                                "example": {
+                                    "error": "ERRO_INTERNO_DO_SERVIDOR",
+                                    "message": "Erro interno do servidor",
+                                    "details": [],
+                                    "timestamp": "2026-06-10T15:22:28.583Z",
+                                    "path": "/pagamentos/log/:id",
+                                    "requestId": null
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/cupons": {
+            "get": {
+                "summary": "Retornar todos os cupons",
+                "description": "Retorna todos os cupons.",
+                "tags": ["Cupons"],
+                "security": [{"bearerAuth": []}],
+                "responses": {
+                    "200": {
+                        "description": "Lista de cupons retornada com sucesso",
+                        "content": {
+                            "application/json": {
+                                "example": [
+                                    {
+                                        "id": "e3cebc2d-c7f8-4821-9ee9-49ba3483e4f4",
+                                        "unidade_id": "fffffffff-ffff-ffff-ffff-ffffffffffff",
+                                        "codigo": "CUPOM15",
+                                        "nome": "Desconto de 15%",
+                                        "descricao": "Desconto de 15% para pedidos acima de R$100",
+                                        "publico": true,
+                                        "tipo": "porcentagem",
+                                        "valor": "15.00",
+                                        "valor_minimo_pedido": "100.00",
+                                        "inicia_em": "2026-06-04T15:35:40.395Z",
+                                        "expira_em": "2027-12-31T23:59:59.000Z",
+                                        "max_usos": 100,
+                                        "usos_atuais": 0,
+                                        "ativo": true,
+                                        "created_at": "2026-06-04T15:35:40.395Z"
+                                    },
+                                    {
+                                        "id": "e9880cc0-1f88-4af1-9a2f-df503a28a37c",
+                                        "unidade_id": "fffffffff-ffff-ffff-ffff-ffffffffffff",
+                                        "codigo": "CUPOM10RESGATE",
+                                        "nome": "Desconto de 10 reais por resgate de pontos",
+                                        "descricao": "Desconto de 10 reais para pedidos acima de R$100 resgatado por pontos",
+                                        "publico": false,
+                                        "tipo": "fixo",
+                                        "valor": "10.00",
+                                        "valor_minimo_pedido": "100.00",
+                                        "inicia_em": "2026-06-04T16:49:18.246Z",
+                                        "expira_em": "2027-12-31T23:59:59.000Z",
+                                        "max_usos": 0,
+                                        "usos_atuais": 0,
+                                        "ativo": true,
+                                        "created_at": "2026-06-04T16:49:18.246Z"
+                                    },
+                                    {
+                                        "id": "2e8ae757-5d19-4e22-b31b-e9ca304e4b80",
+                                        "unidade_id": "fffffffff-ffff-ffff-ffff-ffffffffffff",
+                                        "codigo": "CUPOM10",
+                                        "nome": "Desconto de 10%",
+                                        "descricao": "Desconto de 10% para pedidos acima de R$100",
+                                        "publico": true,
+                                        "tipo": "porcentagem",
+                                        "valor": "10.00",
+                                        "valor_minimo_pedido": "100.00",
+                                        "inicia_em": "2026-06-04T14:14:15.812Z",
+                                        "expira_em": "2024-12-31T23:59:59.000Z",
+                                        "max_usos": 100,
+                                        "usos_atuais": 3,
+                                        "ativo": true,
+                                        "created_at": "2026-06-04T14:14:15.812Z"
+                                    }
+                                ]
+                            }
+                        }
+                    },
+                    "204": {
+                        "description": "Nenhum cupom encontrado",
+                        "content": {
+                            "application/json": {
+                                "example": {
+                                    "message": "Nenhum cupom encontrado"
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "Usuário não autenticado",
+                        "content": {
+                            "application/json": {
+                                "examples": {
+                                    "login_unauthorized": {
+                                        "summary": "Usuário não autenticado",
+                                        "value": {
+                                            "error": "USUARIO_NAO_AUTENTICADO",
+                                            "message": "Usuário não autenticado",
+                                            "details": [],
+                                            "timestamp": "2026-06-10T15:22:28.583Z",
+                                            "path": "/coupons",
+                                            "requestId": null
+                                        }
+                                    },
+                                    "invalid_token": {
+                                        "summary": "Token inválido ou expirado",
+                                        "value": {
+                                            "error": "USUARIO_NAO_AUTENTICADO",
+                                            "message": "Token inválido ou expirado",
+                                            "details": [],
+                                            "timestamp": "2026-06-10T15:22:28.583Z",
+                                            "path": "/coupons",
+                                            "requestId": null
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    "403": {
+                        "description": "Sem permissão",
+                        "content": { 
+                            "application/json": {
+                                "example": {
+                                    "error": "SEM_PERMISSAO",
+                                    "message": "Usuário sem permissão",
+                                    "details": [],
+                                    "timestamp": "2026-06-10T15:22:28.583Z",
+                                    "path": "/coupons",
+                                    "requestId": null
+                                }
+                            }
+                        }
+                    }
+                }
+            },
+            "post": {
+                "summary": "Criar um novo cupom",
+                "description": "Cria um novo cupom.",
+                "tags": ["Cupons"],
+                "security": [{"bearerAuth": []}],
+                "requestBody": {
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "type": "object",
+                                "properties": {
+                                    "unidade_id": {"type": "string", "format": "uuid"},
+                                    "codigo": {"type": "string"},
+                                    "nome": {"type": "string"},
+                                    "descricao": {"type": "string"},
+                                    "publico": {"type": "boolean"},
+                                    "tipo": {"type": "string", "enum": ["fixo", "porcentagem"]},
+                                    "valor": {"type": "string", "format": "decimal"},
+                                    "valor_minimo_pedido": {"type": "string", "format": "decimal"},
+                                    "inicia_em": {"type": "string", "format": "date-time"},
+                                    "expira_em": {"type": "string", "format": "date-time"},
+                                    "max_usos": {"type": "integer"}
+                                },
+                                "required": ["unidade_id", "codigo", "nome", "tipo", "valor"]
+                            },
+                            "example": {
+                                "unidade_id": "fffffffff-ffff-ffff-ffff-ffffffffffff",
+                                "codigo": "CUPOM20",
+                                "nome": "Desconto de 20%",
+                                "descricao": "Desconto de 20% para pedidos acima de R$200",
+                                "publico": true,
+                                "tipo": "porcentagem",
+                                "valor": "20.00",
+                                "valor_minimo_pedido": "200.00",
+                                "inicia_em": "2026-06-10T00:00:00.000Z",
+                                "expira_em": "2026-12-31T23:59:59.000Z",
+                                "max_usos": 50
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "201": {
+                        "description": "Cupom criado com sucesso",
+                        "content": {
+                            "application/json": {
+                                "example": {
+                                    "message": "Cupom criado com sucesso",
+                                    "cupom": {
+                                        "id": "b1c1e0cc-462a-4b6a-acbe-bd7bc0494365",
+                                        "unidade_id": "fffffffff-ffff-ffff-ffff-ffffffffffff",
+                                        "codigo": "CUPOM40",
+                                        "nome": "Desconto de 40%",
+                                        "descricao": "Desconto de 40% para pedidos acima de R$200",
+                                        "publico": true,
+                                        "tipo": "porcentagem",
+                                        "valor": "40.00",
+                                        "valor_minimo_pedido": "200.00",
+                                        "inicia_em": "2026-06-10T00:00:00.000Z",
+                                        "expira_em": "2026-12-31T23:59:59.000Z",
+                                        "max_usos": 50,
+                                        "usos_atuais": 0,
+                                        "ativo": true,
+                                        "created_at": "2026-06-13T20:55:42.344Z"
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "Usuário não autenticado",
+                        "content": {
+                            "application/json": {
+                                "examples": {
+                                    "login_unauthorized": {
+                                        "summary": "Usuário não autenticado",
+                                        "value": {
+                                            "error": "USUARIO_NAO_AUTENTICADO",
+                                            "message": "Usuário não autenticado",
+                                            "details": [],
+                                            "timestamp": "2026-06-10T15:22:28.583Z",
+                                            "path": "/coupons",
+                                            "requestId": null
+                                        }
+                                    },
+                                    "invalid_token": {
+                                        "summary": "Token inválido ou expirado",
+                                        "value": {
+                                            "error": "USUARIO_NAO_AUTENTICADO",
+                                            "message": "Token inválido ou expirado",
+                                            "details": [],
+                                            "timestamp": "2026-06-10T15:22:28.583Z",
+                                            "path": "/coupons",
+                                            "requestId": null
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    "403": { 
+                        "description": "Sem permissão",
+                        "content": { 
+                            "application/json": {
+                                "example": {
+                                    "error": "SEM_PERMISSAO",
+                                    "message": "Usuário sem permissão",
+                                    "details": [],
+                                    "timestamp": "2026-06-10T15:22:28.583Z",
+                                    "path": "/coupons",
+                                    "requestId": null
+                                }
+                            }
+                        }
+                    },
+                    "404": { 
+                        "description": "Unidade não encontrada",
+                        "content": { 
+                            "application/json": {
+                                "example": {
+                                    "error": "UNIDADE_NAO_ENCONTRADA",
+                                    "message": "Unidade não encontrada para associar ao cupom",
+                                    "details": [],
+                                    "timestamp": "2026-06-10T15:22:28.583Z",
+                                    "path": "/coupons",
+                                    "requestId": null
+                                }
+                            }
+                        }
+                    },
+                    "409": { 
+                        "description": "Cupom já existe",
+                        "content": { 
+                            "application/json": {
+                                "example": {
+                                    "error": "CUPOM_JA_EXISTE",
+                                    "message": "Cupom já existe para esta unidade",
+                                    "details": [],
+                                    "timestamp": "2026-06-10T15:22:28.583Z",
+                                    "path": "/coupons",
+                                    "requestId": null
+                                }
+                            }
+                        }
+                    },
+                    "500": { 
+                        "description": "Erro interno do servidor",
+                        "content": { 
+                            "application/json": {
+                                "example": {
+                                    "error": "ERRO_INTERNO_DO_SERVIDOR",
+                                    "message": "Erro interno do servidor",
+                                    "details": [],
+                                    "timestamp": "2026-06-10T15:22:28.583Z",
+                                    "path": "/coupons",
+                                    "requestId": null
+                                }
+                            }
+                        }
+                    }
+                }
+            }   
+        },
+        "/cupons/private": {
+            "post": {
+                "summary": "Criar um cupom privado",
+                "description": "Cria um associação entre um cupom privado e um cliente específico.",
+                "tags": ["Cupons"],
+                "security": [{"bearerAuth": []}],
+                "requestBody": {
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "type": "object",
+                                "properties": {
+                                    "id": {"type": "string", "format": "uuid"},
+                                    "unidade_id": {"type": "string", "format": "uuid"},
+                                    "usuario_id": {"type": "string", "format": "uuid"},
+                                    "cupom_id": {"type": "string", "format": "uuid"}
+                                },
+                                "required": ["unidade_id", "usuario_id", "cupom_id"]
+                            },
+                            "example": {
+                                "unidade_id": "fffffffff-ffff-ffff-ffff-ffffffffffff",
+                                "usuario_id": "ba000000-0000-0000-0000-000000000004",
+                                "cupom_id": "e9880cc0-1f88-4af1-9a2f-df503a28a37c"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "201": {
+                        "description": "Cupom privado criado com sucesso",
+                        "content": {
+                            "application/json": {
+                                "example": {
+                                    "message": "Cupom privado criado com sucesso",
+                                    "cupom": {
+                                        "id": "da5b6909-ba70-4c7a-ad15-1423eb39ce3c",
+                                        "unidade_id": "fffffffff-ffff-ffff-ffff-ffffffffffff",
+                                        "usuario_id": "ba000000-0000-0000-0000-000000000004",
+                                        "cupom_id": "e9880cc0-1f88-4af1-9a2f-df503a28a37c",
+                                        "usado_em": null,
+                                        "status": "disponivel",
+                                        "atribuido_em": "2026-06-13T21:21:55.564Z"
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "Usuário não autenticado",
+                        "content": {
+                            "application/json": {
+                                "examples": {
+                                    "login_unauthorized": {
+                                        "summary": "Usuário não autenticado",
+                                        "value": {
+                                            "error": "USUARIO_NAO_AUTENTICADO",
+                                            "message": "Usuário não autenticado",
+                                            "details": [],
+                                            "timestamp": "2026-06-10T15:22:28.583Z",
+                                            "path": "/cupons/private",
+                                            "requestId": null
+                                        }
+                                    },
+                                    "invalid_token": {
+                                        "summary": "Token inválido ou expirado",
+                                        "value": {
+                                            "error": "USUARIO_NAO_AUTENTICADO",
+                                            "message": "Token inválido ou expirado",
+                                            "details": [],
+                                            "timestamp": "2026-06-10T15:22:28.583Z",
+                                            "path": "/cupons/private",
+                                            "requestId": null
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    "403": { 
+                        "description": "Sem permissão",
+                        "content": { 
+                            "application/json": {
+                                "example": {
+                                    "error": "SEM_PERMISSAO",
+                                    "message": "Usuário sem permissão",
+                                    "details": [],
+                                    "timestamp": "2026-06-10T15:22:28.583Z",
+                                    "path": "/cupons/private",
+                                    "requestId": null
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "Unidade, usuário ou cupom não encontrado",
+                        "content": { 
+                            "application/json": {
+                                "examples": {
+                                    "unit_not_found": {
+                                        "summary": "Unidade não encontrada",
+                                        "value": {
+                                            "error": "UNIDADE_NAO_ENCONTRADA",
+                                            "message": "Unidade não encontrada",
+                                            "details": [],
+                                            "timestamp": "2026-06-10T15:22:28.583Z",
+                                            "path": "/cupons/private",
+                                            "requestId": null
+                                        }
+                                    },
+                                    "user_not_found": {
+                                        "summary": "Usuário não encontrado",
+                                        "value": {
+                                            "error": "USUARIO_NAO_ENCONTRADO",
+                                            "message": "Usuário não encontrado",
+                                            "details": [],
+                                            "timestamp": "2026-06-10T15:22:28.583Z",
+                                            "path": "/cupons/private",
+                                            "requestId": null
+                                        }
+                                    },
+                                    "coupon_not_found": {
+                                        "summary": "Cupom não encontrado",
+                                        "value": {
+                                            "error": "CUPOM_NAO_ENCONTRADO",
+                                            "message": "Cupom não encontrado",
+                                            "details": [],
+                                            "timestamp": "2026-06-10T15:22:28.583Z",
+                                            "path": "/cupons/private",
+                                            "requestId": null
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    "500": { 
+                        "description": "Erro interno do servidor",
+                        "content": { 
+                            "application/json": {
+                                "example": {
+                                    "error": "ERRO_INTERNO_DO_SERVIDOR",
+                                    "message": "Erro interno do servidor",
+                                    "details": [],
+                                    "timestamp": "2026-06-10T15:22:28.583Z",
+                                    "path": "/cupons/private",
+                                    "requestId": null
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/cupons/redeem": {
+            "post": {
+                "summary": "Resgatar um cupom por pontos",
+                "description": "Permite que um cliente resgate um cupom utilizando seus pontos acumulados.",
+                "tags": ["Cupons"],
+                "security": [{"bearerAuth": []}],
+                "requestBody": {
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "type": "object",
+                                "properties": {
+                                    "usuario_id": {"type": "string", "format": "uuid"},
+                                    "unidade_id": {"type": "string", "format": "uuid"},
+                                    "codigo_id": {"type": "string", "format": "uuid"}
+                                },
+                                "required": ["usuario_id", "unidade_id", "codigo_id"]
+                            },
+                            "example": {
+                                "usuario_id": "ba000000-0000-0000-0000-000000000004",
+                                "unidade_id": "ffffffff-ffff-ffff-ffff-ffffffffffff",
+                                "codigo_id": "CUPOM10RESGATE"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "201": {
+                        "description": "Cupom resgatado com sucesso",
+                        "content": {
+                            "application/json": {
+                                "example": {
+                                    "message": "Cupom resgatado com sucesso",
+                                    "cupom": {
+                                        "id": "e9880cc0-1f88-4af1-9a2f-df503a28a37c",
+                                        "unidade_id": "ffffffff-ffff-ffff-ffff-ffffffffffff",
+                                        "codigo": "CUPOM10RESGATE",
+                                        "nome": "Desconto de 10 reais por resgate de pontos",
+                                        "descricao": "Desconto de 10 reais para pedidos acima de R$100 resgatado por pontos",
+                                        "publico": false,
+                                        "tipo": "fixo",
+                                        "valor": "10.00",
+                                        "valor_minimo_pedido": "100.00",
+                                        "inicia_em": "2026-06-04T16:49:18.246Z",
+                                        "expira_em": "2027-12-31T23:59:59.000Z",
+                                        "max_usos": 0,
+                                        "usos_atuais": 0,
+                                        "ativo": true,
+                                        "created_at": "2026-06-04T16:49:18.246Z"
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Requisição inválida ou pontos insuficientes",
+                        "content": {
+                            "application/json": {
+                                "example": {
+                                    "error": "REQUISICAO_DE_RESGATE_FALHOU",
+                                    "message": "Requisição de resgate de cupom falhou",
+
+                                    "details": [],
+                                    "timestamp": "2026-06-10T15:22:28.583Z",
+                                    "path": "/cupons/redeem",
+                                    "requestId": null
+                                }
+                            }
+                        }
+                    },
+                    "401": { 
+                        "description": "Usuário não autenticado",
+                        "content": {
+                            "application/json": {
+                                "examples": {
+                                    "login_unauthorized": {
+                                        "summary": "Usuário não autenticado",
+                                        "value": {
+                                            "error": "USUARIO_NAO_AUTENTICADO",
+                                            "message": "Usuário não autenticado",
+                                            "details": [],
+                                            "timestamp": "2026-06-10T15:22:28.583Z",
+                                            "path": "/cupons/redeem",
+                                            "requestId": null
+                                        }
+                                    },
+                                    "invalid_token": {
+                                        "summary": "Token inválido ou expirado",
+                                        "value": {
+                                            "error": "USUARIO_NAO_AUTENTICADO",
+                                            "message": "Token inválido ou expirado",
+                                            "details": [],
+                                            "timestamp": "2026-06-10T15:22:28.583Z",
+                                            "path": "/cupons/redeem",
+                                            "requestId": null
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    "403": {
+                        "description": "Sem permissão",
+                        "content": { 
+                            "application/json": {
+                                "example": {
+                                    "error": "SEM_PERMISSAO",
+                                    "message": "Usuário sem permissão",
+                                    "details": [],
+                                    "timestamp": "2026-06-10T15:22:28.583Z",
+                                    "path": "/cupons/redeem",
+                                    "requestId": null
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "Usuário, unidade ou cupom não encontrado",
+                        "content": { 
+                            "application/json": {
+                                "examples": {
+                                    "user_not_found": {
+                                        "summary": "Usuário não encontrado",
+                                        "value": {
+                                            "error": "USUARIO_NAO_ENCONTRADO",
+                                            "message": "Usuário não encontrado",
+                                            "details": [],
+                                            "timestamp": "2026-06-10T15:22:28.583Z",
+                                            "path": "/cupons/redeem",
+                                            "requestId": null
+                                        }
+                                    },
+                                    "unit_not_found": {
+                                        "summary": "Unidade não encontrada",
+                                        "value": {
+                                            "error": "UNIDADE_NAO_ENCONTRADA",
+                                            "message": "Unidade não encontrada",
+                                            "details": [],
+                                            "timestamp": "2026-06-10T15:22:28.583Z",
+                                            "path": "/cupons/redeem",
+                                            "requestId": null
+                                        }
+                                    },
+                                    "coupon_not_found": {
+                                        "summary": "Cupom não encontrado",
+                                        "value": {
+                                            "error": "CUPOM_NAO_ENCONTRADO",
+                                            "message": "Cupom não encontrado",
+                                            "details": [],
+                                            "timestamp": "2026-06-10T15:22:28.583Z",
+                                            "path": "/cupons/redeem",
+                                            "requestId": null
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    "409": {
+                        "description": "Pontos insuficientes para resgatar o cupom",
+                        "content": { 
+                            "application/json": {
+                                "example": {
+                                    "error": "PONTOS_INSUFICIENTES",
+                                    "message": "Pontos insuficientes para resgatar este cupom",
+                                    "details": [],
+                                    "timestamp": "2026-06-10T15:22:28.583Z",
+                                    "path": "/cupons/redeem",
+                                    "requestId": null
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    },
+    "components": {
+        "securitySchemes": {
+            "bearerAuth": {
+                "type": "http",
+                "scheme": "bearer",
+                "bearerFormat": "JWT"
+            }
+        }
+    }
+}

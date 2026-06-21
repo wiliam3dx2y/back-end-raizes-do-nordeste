@@ -1,0 +1,37 @@
+erDiagram
+    unidades {
+        UUID id PK
+        VARCHAR nome
+    }
+    estoque {
+        UUID id PK
+        UUID unidade_id FK
+        VARCHAR nome
+        NUMERIC estoque_atual
+    }
+    movimentacao_estoque {
+        UUID id PK
+        UUID unidade_id FK
+        UUID estoque_item_id FK
+        VARCHAR tipo
+        NUMERIC quantidade
+    }
+    cardapio_produtos {
+        UUID id PK
+        UUID unidade_id FK
+        VARCHAR nome
+    }
+    receita_produtos {
+        UUID id PK
+        UUID produto_cardapio_id FK
+        UUID estoque_item_id FK
+        NUMERIC quantidade
+    }
+
+    unidades ||--o{ estoque : "controla"
+    unidades ||--o{ movimentacao_estoque : "audita"
+    unidades ||--o{ cardapio_produtos : "disponibiliza"
+
+    estoque ||--o{ movimentacao_estoque : "sofre"
+    estoque ||--o{ receita_produtos : "compoe"
+    cardapio_produtos ||--o{ receita_produtos : "necessita"

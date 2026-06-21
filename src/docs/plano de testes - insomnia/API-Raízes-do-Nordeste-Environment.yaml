@@ -1,0 +1,19 @@
+type: environment.insomnia.rest/5.0
+schema_version: "5.1"
+name: API - Raízes do Nordeste - Environment
+meta:
+  id: wrk_a2fc4d1050944571a69db8418a734810
+  created: 1781879690937
+  modified: 1781879690937
+  description: ""
+environments:
+  name: Base Environment
+  meta:
+    id: env_18f31addc439c1b16a8cb8874e67242717eab1e0
+    created: 1781879690938
+    modified: 1781881834600
+    isPrivate: false
+  data:
+    BASE_URL: http://localhost:3000
+    UNIDADE_ID: ffffffff-ffff-ffff-ffff-ffffffffffff
+    PRODUCT_ID: cccccccc-0000-0000-0000-000000000001

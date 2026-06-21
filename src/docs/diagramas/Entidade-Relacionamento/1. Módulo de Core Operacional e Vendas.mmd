@@ -1,0 +1,39 @@
+erDiagram
+    unidades {
+        UUID id PK
+        VARCHAR nome
+    }
+    cardapio_produtos {
+        UUID id PK
+        UUID unidade_id FK
+        VARCHAR nome
+        NUMERIC preco
+    }
+    pedidos {
+        UUID id PK
+        UUID unidade_id FK
+        NUMERIC total
+        VARCHAR status
+    }
+    pedido_itens {
+        UUID id PK
+        UUID pedido_id FK
+        UUID produto_cardapio_id FK
+        INTEGER quantidade
+        NUMERIC subtotal
+    }
+    pagamentos {
+        UUID id PK
+        UUID pedido_id FK
+        UUID unidade_id FK
+        NUMERIC valor
+        VARCHAR status
+    }
+
+    unidades ||--o{ cardapio_produtos : "disponibiliza"
+    unidades ||--o{ pedidos : "processa"
+    unidades ||--o{ pagamentos : "recebe"
+    
+    pedidos ||--o{ pedido_itens : "contem"
+    pedidos ||--|| pagamentos : "origina"
+    cardapio_produtos ||--o{ pedido_itens : "incluido_em"
