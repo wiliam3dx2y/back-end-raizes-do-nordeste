@@ -1,0 +1,71 @@
+graph TD
+    %% Estilos e Definições de Subgráficos
+    subgraph Cliente ["Mundo Externo (Cliente / Insomnia)"]
+        Requisição["Requisição HTTP (GET, POST, etc.)"]
+    end
+
+    subgraph Inicializacao ["1. Ponto de Entrada"]
+        server["server.ts (Inicia o Servidor)"]
+        app["app.ts (Configura Express / Swagger)"]
+    end
+
+    subgraph Roteamento ["2. Camada de Rotas"]
+        routes["routes.ts (Definição dos Endpoints)"]
+        m_auth["auth-middleware.ts"]
+        m_role["role-middleware.ts"]
+    end
+
+    subgraph Controladores ["3. Camada de Orquestração (Controllers)"]
+        c_users["users-controller.ts"]
+        c_orders["orders-controller.ts"]
+        c_payments["payments-controller.ts / mock"]
+        c_coupons["coupons-controller.ts"]
+        c_inv["inventories-controller.ts"]
+        c_menus["menus-controller.ts"]
+        c_units["units-controller.ts"]
+    end
+
+    subgraph Negocio ["4. Camada de Regras de Negócio (Services)"]
+        s_auth["Services /auth <br> (hash, token, check)"]
+        s_users["Services /users <br> (login, register, update)"]
+        s_orders["Services /orders <br> (calculate, create, find)"]
+        s_payments["Services /payments <br> (process, register, update)"]
+        s_coupons["Services /coupons <br> (create, find, redeem)"]
+        s_inv["Services /inventories <br> (create, find, update)"]
+        s_menus["Services /menus"]
+        s_units["Services /units"]
+    end
+
+    subgraph Dados ["5. Camada de Acesso a Dados (Repositories & DB)"]
+        r_all["Repositories <br> (users, orders, payments, coupons, etc.)"]
+        db_ts["database.ts (Conexão)"]
+        db_sql[("Banco de Dados SQL <br> (tables.sql / data.sql)")]
+    end
+
+    %% Fluxo das Linhas de Conexão
+    Requisição --> server
+    server --> app
+    app --> routes
+    
+    %% Validação de Middleware antes dos Controllers
+    routes --> m_auth
+    m_auth --> m_role
+    m_role --> c_users & c_orders & c_payments & c_coupons & c_inv
+    
+    %% Fluxo Controller -> Service
+    c_users --> s_auth & s_users
+    c_orders --> s_orders
+    c_payments --> s_payments
+    c_coupons --> s_coupons
+    c_inv --> s_inv
+    c_menus --> s_menus
+    c_units --> s_units
+
+    %% Fluxo Service -> Repository -> DB
+    s_users & s_orders & s_payments & s_coupons & s_inv & s_menus & s_units --> r_all
+    r_all --> db_ts
+    db_ts --> db_sql
+
+    %% Links de estilo visual
+    style Requisição fill:#f9f,stroke:#333,stroke-width:2px
+    style db_sql fill:#85C1E9,stroke:#333,stroke-width:2px
