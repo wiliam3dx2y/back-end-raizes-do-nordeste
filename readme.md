@@ -133,7 +133,7 @@ Acesse a rota http://localhost:3000/api-docs.
 #### Requisitos
 É necessário o arquivo da Collection com os requests e do arquivo do Environment com as variáveis ambiente.
 - [Collection](https://github.com/wiliam3dx2y/back-end-raizes-do-nordeste/blob/main/src/docs/plano%20de%20testes%20-%20insomnia/API-Ra%C3%ADzes-do-Nordeste-Collection.yaml).
-- [Environment](https://github.com/wiliam3dx2y/back-end-raizes-do-nordeste/blob/main/src/docs/plano%20de%20testes%20-%20insomnia/API-Ra%C3%ADzes-do-Nordeste-Environment.yaml)
+- [Environment](https://github.com/wiliam3dx2y/back-end-raizes-do-nordeste/blob/main/src/docs/plano%20de%20testes%20-%20insomnia/API-Ra%C3%ADzes-do-Nordeste-Environment.yaml).
 
 #### Execução
 Os testes são dividos em duas pastas principais: o **Fluxo Principal** e **Outros Cenários**. Os requests do **Fluxo Principal** devem ser executados na ordem de numeração manualmente ou com um plugin de testes. Enquanto, os requests em **Outros Cenários** são executados isoladamente, mas sendo necessário executar antes os requests de login como cliente ou como admin conforme o cenário de teste.
